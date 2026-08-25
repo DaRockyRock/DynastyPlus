@@ -93,3 +93,12 @@ Every rendered UI element should be a reusable component under
 `frontend/src/components/` with a colocated Storybook story. Export reusable
 components from `frontend/src/components/index.js` and verify frontend changes
 with both `npm run build` and `npm run build-storybook`.
+
+## Contributing
+
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for local
+setup, required checks, and the pull-request process. Use
+[GitHub Discussions](https://github.com/DaRockyRock/DynastyPlus/discussions)
+for questions and early ideas, or open a structured
+[issue](https://github.com/DaRockyRock/DynastyPlus/issues/new/choose) for a bug
+or feature request.
