@@ -1,0 +1,35 @@
+{
+  "name": "cfbmod-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@fontsource/saira": "^5.2.11",
+    "@fontsource/saira-condensed": "^5.2.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@chromatic-com/storybook": "^5.2.1",
+    "@storybook/addon-a11y": "^10.4.2",
+    "@storybook/addon-docs": "^10.4.2",
+    "@storybook/addon-mcp": "^0.6.0",
+    "@storybook/addon-vitest": "^10.4.2",
+    "@storybook/react-vite": "^10.4.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/browser-playwright": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.8",
+    "playwright": "^1.60.0",
+    "prop-types": "^15.8.1",
+    "storybook": "^10.4.2",
+    "vite": "^5.4.11",
+    "vitest": "^4.1.8"
+  }
+}
