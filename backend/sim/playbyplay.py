@@ -1,10 +1,12 @@
 """Deterministic full-game reconstruction for the user's game.
 
 The season model in engine.py decides only a final score per game, and stats.py
-distributes season totals across four star players. The exported snapshot also
-needs a complete game record: every drive, every play, both box scores, and the
-scoring summary. This module reconstructs that game from the canonical final
-score, so records, polls, season stats, and user overrides do not need to change.
+distributes season totals across four star players. That is enough for standings,
+polls, and the Heisman race, but the post-game press conference needs the WHOLE
+game: every drive, every play, both box scores, the scoring summary. This module
+reconstructs that game from the one fact that is already canonical, the final
+score, so nothing downstream (records/polls/season stats, the user override) has
+to change.
 
 It is "score-first": the final score stays the source of truth, and we back-fill
 a play sequence whose scoring sums to it exactly and whose per-player yards sum to
@@ -15,8 +17,8 @@ stats.compute are idempotent. The star QB/RB/WR/EDGE names come straight from
 stats.py so the box score and the Heisman board name the same fictional players,
 and the user's real key_players fill those slots for his team.
 
-Pure output (no timestamps): the game lands in dynasty["last_game"], which is
-part of meta.hash, so every field must remain deterministic.
+Pure output (no timestamps): the game lands in dynasty["last_game"], which is part
+of meta.hash, so any non-deterministic field would spam the watcher's refresh.
 """
 from __future__ import annotations
 

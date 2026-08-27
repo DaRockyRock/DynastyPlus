@@ -2,10 +2,14 @@ import { useState } from 'react';
 import NavTabs from './NavTabs.jsx';
 
 const tabs = [
-  { id: 'season', label: 'Season' },
-  { id: 'customize', label: 'Customize' },
-  { id: 'nil', label: 'NIL' },
+  { id: 'home', label: 'Home' },
+  { id: 'news', label: 'News Feed' },
+  { id: 'cfp', label: 'CFP Committee' },
   { id: 'recruiting', label: 'Recruiting' },
+  { id: 'portal', label: 'Portal' },
+  { id: 'hotseat', label: 'Hot Seat' },
+  { id: 'awards', label: 'Awards' },
+  { id: 'archive', label: 'Archive' },
 ];
 
 export default {
@@ -17,7 +21,7 @@ export default {
 export const Interactive = {
   render: () => {
     function Demo() {
-      const [active, setActive] = useState('season');
+      const [active, setActive] = useState('home');
       return <NavTabs tabs={tabs} active={active} onSelect={setActive} />;
     }
     return <Demo />;

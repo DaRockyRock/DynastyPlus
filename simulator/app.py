@@ -1,8 +1,13 @@
-"""Flask API for Dynasty+ Tools.
+"""The Simulator Flask app (a CFB 27 stand-in).
 
 Owns the game data and the controls to drive a season: start a season, simulate
 or override a week, and edit identity / roster / recruiting / NIL. Every change
-writes an exportable dynasty snapshot.
+writes the dynasty save file the Dynasty+ companion watches.
+
+Coach actions the companion queued (NIL offers, recruiting actions, budget
+reallocations) arrive in the companion inbox; they are drained and applied
+through the budget engine at the start of each advance (before the recruiting
+cycle reads the coach's spend) and on demand when the inbox file changes.
 """
 from __future__ import annotations
 
@@ -14,7 +19,7 @@ from werkzeug.utils import secure_filename
 
 from backend import (
     budget, conferences, config, customization_game as customization,
-    purge, teams,
+    inbox, mock_data, purge, teams,
 )
 from backend.sim import adapter, state as sim_state
 from . import save_writer
@@ -24,18 +29,18 @@ _lock = threading.Lock()
 
 ALLOWED_IMAGE_EXT = {"png", "jpg", "jpeg", "gif", "webp", "svg", "avif"}
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-DEFAULT_YEAR = 2026
 
-_SHELL = "index.html"
+_SHELL = "simulator.html"  # the Vite entry this app serves
 
 
 # --- frontend (Vite build) ------------------------------------------------
 _BUILD_HINT = (
     "<html><body style='font-family:sans-serif;background:#0a0e14;color:#e9eef5;"
-    "padding:48px'><h2>Dynasty+ Tools UI not built yet</h2><p>Run the build once:</p>"
+    "padding:48px'><h2>Simulator UI not built yet</h2><p>Run the build once:</p>"
     "<pre style='background:#141a24;padding:16px;border-radius:10px'>"
     "cd frontend\nnpm install\nnpm run build</pre>"
-    "<p>Or develop with hot reload: <code>npm run dev</code>.</p></body></html>"
+    "<p>Or develop with hot reload: <code>npm run dev</code> then open "
+    "<code>/simulator.html</code>.</p></body></html>"
 )
 
 
@@ -79,7 +84,7 @@ def _default_year() -> int:
             continue
         if sim_state.is_active(y):
             years.append(y)
-    return max(years) if years else DEFAULT_YEAR
+    return max(years) if years else mock_data.SEASON_YEAR
 
 
 def _req_year(default: int | None = None) -> int:
@@ -88,15 +93,46 @@ def _req_year(default: int | None = None) -> int:
     return int(y) if y not in (None, "") else (default if default is not None else _default_year())
 
 
+def _appliers(year: int, dynasty: dict):
+    """Map inbox action kinds onto the authoritative budget mutations. The
+    dynasty dict supplies entity identity (expected NIL, etc.); the running
+    interest/offers come from the budget store, updated on each call."""
+    return {
+        "nil_offer": lambda a: budget.set_nil_offer(
+            year, int(a.get("week", 0)), a.get("entity_id", ""),
+            a.get("entity_kind", "recruit"), int(a.get("amount", 0)), dynasty),
+        "recruiting_action": lambda a: budget.spend_recruiting_action(
+            year, int(a.get("week", 0)), a.get("entity_id", ""), a.get("action_key", ""), dynasty),
+        "allocate": lambda a: budget.set_allocation(
+            year, int(a.get("week", 0)), a.get("allocations") or {}, dynasty),
+    }
+
+
+def apply_inbox(year: int) -> list:
+    """Drain the companion inbox for `year` at its current week and rewrite the
+    save so the companion sees the authoritative budget. Used by the inbox
+    watcher between weeks; advance() drains inline before simming instead."""
+    if not sim_state.is_active(year):
+        return []
+    with _lock:
+        week = sim_state.status(year)["week"]
+        dynasty = adapter.build_dynasty(year, week)
+        applied = inbox.drain(year, week, _appliers(year, dynasty))
+        if applied:
+            save_writer.write(year, week)
+    return applied
+
+
 # --- meta / config --------------------------------------------------------
 @app.get("/api/config")
 def api_config():
     year = _default_year()
     st = sim_state.status(year)
     return jsonify({
-        "app": "dynasty-tools",
+        "app": "simulator",
         "version": config.APP_VERSION,
         "save_path": config.SAVE_PATH,
+        "inbox_path": config.INBOX_PATH,
         "sim": st,
         "user_team": customization.team().get("name"),
     })
@@ -227,7 +263,8 @@ def api_customization_generate_person(section: str):
     body = request.get_json(silent=True) or {}
     seed = body.get("seed") or {}
     try:
-        result = customization.generate_person(section, seed)
+        # The Simulator has no LLM connection; personas are generated locally.
+        result = customization.generate_person(section, seed, use_llm=False)
     except KeyError as exc:
         return jsonify({"error": str(exc)}), 404
     return jsonify(result)
@@ -266,7 +303,7 @@ def api_upload():
     return jsonify({"url": f"/uploads/{name}", "name": name})
 
 
-# --- NIL / Dynasty Points budget ------------------------------------------
+# --- NIL / Dynasty Points budget (authoritative; the Simulator owns it) ----
 def _dynasty_for_budget(year: int):
     week = sim_state.status(year)["week"]
     return week, adapter.build_dynasty(year, week)
@@ -323,6 +360,21 @@ def api_budget_recruiting_action():
     return jsonify(res)
 
 
+# --- companion inbox (read for the UI; drained on advance + on file change) -
+@app.get("/api/inbox")
+def api_inbox():
+    year = _default_year()
+    return jsonify({"year": year, "pending": inbox.pending(year), "actions": inbox.all_actions()})
+
+
+@app.post("/api/inbox/apply")
+def api_inbox_apply():
+    """Drain + apply queued coach actions right now (without advancing)."""
+    year = _req_year()
+    applied = apply_inbox(year)
+    return jsonify({"applied": applied, "pending": inbox.pending(year)})
+
+
 # --- season simulation ----------------------------------------------------
 @app.get("/api/sim/state")
 def api_sim_state():
@@ -331,7 +383,7 @@ def api_sim_state():
 
 @app.post("/api/sim/new")
 def api_sim_new():
-    year = _req_year(default=DEFAULT_YEAR)
+    year = _req_year(default=mock_data.SEASON_YEAR)
     body = request.get_json(silent=True) or {}
     seed = body.get("seed")
     seed = int(seed) if seed not in (None, "") else None
@@ -344,7 +396,9 @@ def api_sim_new():
         (config.BUDGET_DIR / f"{year}.json").unlink()
     except OSError:
         pass
-    # The new dynasty receives a stable unique id for its exported snapshots.
+    # The new dynasty is stamped with its own unique id (sim_state.new_season), so
+    # the companion scopes all of its generated content under that id: nothing from
+    # any prior dynasty can bleed in, and no per-year cleanup is needed here.
     save_writer.write(year, 1)
     return jsonify({"status": status, "pointer": {"year": year, "week": 1}})
 
@@ -366,21 +420,26 @@ def api_sim_advance():
     body = request.get_json(silent=True) or {}
     override = body.get("override") or None
     with _lock:
+        week = sim_state.status(year)["week"]
+        dynasty = adapter.build_dynasty(year, week)
+        # Apply queued coach actions for this week BEFORE the recruiting cycle
+        # reads the coach's spend (sim_state.advance -> recruiting.advance).
+        applied = inbox.drain(year, week, _appliers(year, dynasty))
         res = sim_state.advance(year, override=override)
         if res.get("error"):
             return jsonify(res), 400
         new_week = sim_state.status(year)["week"]
         save_writer.write(year, new_week)
     res["pointer"] = {"year": year, "week": new_week}
+    res["applied_actions"] = applied
     return jsonify(res)
 
 
 @app.post("/api/sim/simulate-game")
 def api_sim_simulate_game():
-    """Play the current week's games without advancing the week.
-
-    The recruiting cycle does not run until the user advances.
-    """
+    """Play the current week's games and lock them WITHOUT advancing the week, so
+    the companion can run the post-game press conference and reflect the result in
+    this week's coverage. The recruiting cycle does not run until you advance."""
     year = _req_year()
     if not sim_state.is_active(year):
         return jsonify({"error": "no active simulated season"}), 404
@@ -406,7 +465,10 @@ def api_sim_reset():
 
 @app.post("/api/sim/delete")
 def api_sim_delete():
-    """Delete all simulated seasons, budgets, snapshots, and customization."""
+    """Delete the entire dynasty and start from scratch. Wipes every simulated
+    season and all generated media, archives, budget, and phone/feed/news state,
+    clears the save + companion inbox + dynasty registry, and resets both
+    customization stores to defaults. A full clean slate (a fresh-checkout state)."""
     with _lock:
         summary = purge.delete_everything()
     return jsonify({"deleted": True, "status": sim_state.status(_default_year()), **summary})

@@ -7,7 +7,7 @@ import PersonalitySliders from './PersonalitySliders.jsx';
 // Common conferences offered as autocomplete for conference fields.
 const CONFERENCES = [
   'Big Ten', 'SEC', 'ACC', 'Big 12', 'Pac-12', 'American', 'Mountain West',
-  'Conference USA', 'MAC', 'Sun Belt', 'Independent',
+  'Conference USA', 'MAC', 'Sun Belt', 'Independent', 'Media', 'Former Chair',
 ];
 
 // Renders one editable field by its schema `type`, wrapped with a label, the

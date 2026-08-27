@@ -1,5 +1,6 @@
 import StarRating from '../ui/StarRating.jsx';
 import TeamLogo from '../ui/TeamLogo.jsx';
+import PersonName from '../people/PersonName.jsx';
 
 // One prospect line in the national recruit board. Grid columns align with the
 // RecruitBoard header. `recruit` is a /api/sim/recruits row.
@@ -17,7 +18,7 @@ export default function RecruitRow({ recruit: r, onSelect }) {
     <div className="rb-row" role={onSelect ? 'button' : undefined} tabIndex={onSelect ? 0 : undefined} onClick={onSelect ? () => onSelect(r) : undefined}>
       <span className="rb-rank">{r.national_rank}</span>
       <div className="rb-player">
-        <span className="rb-name">{r.name}</span>
+        <PersonName name={r.name} kind="recruit"><span className="rb-name">{r.name}</span></PersonName>
         <span className="rb-sub">{r.position}{r.position_rank ? ` ${r.position_rank}` : ''} · {r.hometown}</span>
       </div>
       <span className="rb-stars"><StarRating value={r.stars} /></span>

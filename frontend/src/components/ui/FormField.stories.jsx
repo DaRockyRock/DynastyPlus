@@ -9,8 +9,8 @@ export default {
 export const Text = {
   render: () => (
     <div className="set-grid">
-      <FormField label="Coach name" help="Shown in program customization.">
-        <input className="set-input" placeholder="Garrett Mason" />
+      <FormField label="Anthropic API key" help="Starts with sk-ant-. Stored locally, never shared.">
+        <input className="set-input" placeholder="sk-ant-..." />
       </FormField>
     </div>
   ),
@@ -19,11 +19,11 @@ export const Text = {
 export const TwoUp = {
   render: () => (
     <div className="set-grid">
-      <FormField label="School" width="half">
-        <input className="set-input" placeholder="Nebraska" />
+      <FormField label="Base URL" width="half" help="Your local server.">
+        <input className="set-input" placeholder="http://127.0.0.1:8787" />
       </FormField>
-      <FormField label="Nickname" width="half">
-        <input className="set-input" placeholder="Cornhuskers" />
+      <FormField label="Model" width="half">
+        <input className="set-input" placeholder="claude-haiku-4-5" />
       </FormField>
     </div>
   ),

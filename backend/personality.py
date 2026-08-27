@@ -1,13 +1,22 @@
 """Personality engine.
 
-Every coach, player, recruit, and transfer can carry a set of 1-100 trait
-sliders plus a written biography. The traits and biography keep generated
-people stable and distinct throughout a dynasty.
+Every person in the dynasty universe - coaches, players, recruits, transfers,
+media, committee members - carries a set of 1-100 trait sliders plus a written
+biography. The sliders shape how a person talks, how they interact with the
+coach, and what motivates them; the bio gives them backstory and character that
+an LLM agent can lean on to behave consistently.
 
-Generated people get randomized sliders and a locally assembled biography.
-Values are seeded by name so the same person is stable across reads while
-remaining distinct from everyone else.
-This module depends only on the standard library.
+Two generation modes:
+  * generated - fictional people (your roster, recruits, staff, the carousel).
+    Sliders are randomized; a recruit gets one the moment they hit your board,
+    and every roster player gets one automatically. Seeded by name so the same
+    person is stable across reads, but distinct from everyone else.
+  * fixed - real people (the CFP committee, the media). Their sliders and bios
+    are authored once from research and stay the same every time (still fully
+    editable in the Customize flow).
+
+This module is a leaf: it depends only on the standard library (plus a lazy,
+optional LLM call used only on explicit generation, never on read).
 """
 from __future__ import annotations
 
@@ -15,7 +24,7 @@ import random
 from typing import Any
 
 # The trait set. Each is a 1-100 slider with a labelled low and high pole so the
-# editor can present each number with meaningful endpoints.
+# editor and the LLM both understand what the number means.
 PERSONALITY_TRAITS: list[dict[str, str]] = [
     {"key": "confidence", "label": "Confidence", "low": "Humble", "high": "Brash"},
     {"key": "competitiveness", "label": "Competitiveness", "low": "Easygoing", "high": "Relentless"},
@@ -115,6 +124,18 @@ def _context_clause(record: dict, noun: str) -> str | None:
         return f"is the {record['role']}" if record.get("role") else "is a coach on staff"
     if noun == "coaching candidate":
         return f"is {record['current']}" if record.get("current") else "is a name on the carousel"
+    if noun == "committee member":
+        return f"serves as {record['role']}" if record.get("role") else "sits on the selection committee"
+    if noun in ("reporter", "recruiting analyst", "award voter", "media personality"):
+        outlet = record.get("outlet")
+        beat = record.get("beat")
+        if outlet and beat:
+            return f"covers the {beat} beat for {outlet}"
+        if outlet:
+            return f"writes for {outlet}" if noun != "media personality" else f"is a voice for {outlet}"
+        return "is a member of the media"
+    if noun == "contact":
+        return f"is your {record['role']}" if record.get("role") else None
     return None
 
 
@@ -166,7 +187,37 @@ def build_bio(record: dict, *, noun: str, traits: dict[str, int]) -> str:
     return " ".join(sentences)
 
 
-def enrich(record: dict, *, noun: str, mode: str) -> dict:
+def build_bio_llm(record: dict, *, noun: str, traits: dict[str, int]) -> str:
+    """Optional richer bio via the LLM. Only called on explicit generation
+    (never on read). Falls back to the templated bio on any failure."""
+    try:
+        from . import llm
+        if not llm.available():
+            return build_bio(record, noun=noun, traits=traits)
+        slider_text = ", ".join(
+            f"{t['label']} {traits.get(t['key'], 50)}/100 ({t['low']}<->{t['high']})"
+            for t in PERSONALITY_TRAITS
+        )
+        name = record.get("name") or record.get("coach") or "the person"
+        facts = {k: v for k, v in record.items() if k not in ("bio", "traits") and v not in (None, "")}
+        system = (
+            "You write short, vivid backstory bios for characters in a college football "
+            "dynasty simulation. 2-4 sentences, grounded in the given facts and personality "
+            "sliders. Give them real character and motivation. Never use dashes as punctuation; use commas, never dashes. "
+            "Return only the bio text."
+        )
+        prompt = (
+            f"Person: {name} ({noun}).\nKnown facts: {facts}.\nPersonality: {slider_text}.\n"
+            "Write the bio."
+        )
+        text = llm.generate_text(system, prompt, max_tokens=240)
+        text = (text or "").strip()
+        return text or build_bio(record, noun=noun, traits=traits)
+    except Exception:
+        return build_bio(record, noun=noun, traits=traits)
+
+
+def enrich(record: dict, *, noun: str, mode: str, use_llm: bool = False) -> dict:
     """Ensure a person record has a full `traits` dict and a `bio`.
 
     generated: randomize missing sliders (seeded by name) and write a bio if none.
@@ -183,13 +234,15 @@ def enrich(record: dict, *, noun: str, mode: str) -> dict:
     rec["traits"] = {k: int(existing.get(k, 50)) for k in TRAIT_KEYS}
 
     if not rec.get("bio"):
-        rec["bio"] = build_bio(rec, noun=noun, traits=rec["traits"])
+        builder = build_bio_llm if use_llm else build_bio
+        rec["bio"] = builder(rec, noun=noun, traits=rec["traits"])
     return rec
 
 
-def generate_person(record: dict, *, noun: str) -> dict[str, Any]:
+def generate_person(record: dict, *, noun: str, use_llm: bool = False) -> dict[str, Any]:
     """Fresh persona for a new person (random sliders + a bio). Used when a
     recruit is added to the board or a new person is created in the editor."""
     traits = random_traits(record.get("name") or record.get("coach") or None)
-    bio = build_bio({**record, "traits": traits}, noun=noun, traits=traits)
+    builder = build_bio_llm if use_llm else build_bio
+    bio = builder({**record, "traits": traits}, noun=noun, traits=traits)
     return {"traits": traits, "bio": bio}

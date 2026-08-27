@@ -1,11 +1,13 @@
 """Dynasty state schema.
 
-This is the contract for the exported dynasty snapshot.
+This is the contract between the save-file layer and the generation layer.
 Until the CFB 27 PC save format is reverse engineered (game expected July
 2026 on Steam), the app accepts a structured JSON object shaped like this.
+The mock data generator produces a conforming object for development.
 
-The schema is intentionally permissive so future save readers can tolerate
-missing fields. `validate()` checks the required core fields.
+The schema is intentionally permissive: generation modules pull what they
+need and tolerate missing fields. `validate()` checks the handful of fields
+the pipeline depends on rather than enforcing every key.
 """
 from __future__ import annotations
 
@@ -16,9 +18,9 @@ from typing import Any
 SCHEMA_DESCRIPTION: dict[str, Any] = {
     "meta": {
         "generated_at": "ISO-8601 timestamp",
-        "source": "sim",
+        "source": "mock | save",
         "app_version": "string",
-        "dynasty_id": "string, stable unique id for this dynasty",
+        "dynasty_id": "string, stable unique id for this dynasty/world (the companion scopes all per-dynasty data to it)",
     },
     "season": {
         "year": "int, e.g. 2026",
@@ -172,7 +174,8 @@ SCHEMA_DESCRIPTION: dict[str, Any] = {
         "ap_top25": [{"rank": "int", "team": "string", "abbr": "string", "espn_id": "int", "record": "W-L"}],
         "cfp_top12": [{"rank": "int", "team": "string", "abbr": "string", "espn_id": "int", "record": "W-L"}],
         "heisman_frontrunners": [{"name": "string", "team": "string", "position": "string"}],
-        # The full FBS slate for the current week.
+        # The full FBS slate for the current week. The companion ranks these
+        # client-side into the home page's marquee matchups.
         "scoreboard": [
             {
                 "week": "int",
@@ -188,8 +191,9 @@ SCHEMA_DESCRIPTION: dict[str, Any] = {
             }
         ],
     },
-    # The program's prior seasons (most recent first). user_coached marks the
-    # seasons when the current head coach was in charge.
+    # The program's prior seasons (most recent first), so the companion opens on
+    # the real landscape: last year's results and the coaching change. user_coached
+    # marks the seasons the current head coach was in charge.
     "history": [
         {
             "year": "int",

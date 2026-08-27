@@ -4,6 +4,7 @@ import MoneyValue from '../ui/MoneyValue.jsx';
 import StageTag from '../ui/StageTag.jsx';
 import StarRating from '../ui/StarRating.jsx';
 import DealbreakerTag from '../ui/DealbreakerTag.jsx';
+import PersonName from '../people/PersonName.jsx';
 import { clamp } from '../../lib/format.js';
 
 // The recruiting-NIL spreadsheet: every prospect with their stage, expected
@@ -20,7 +21,7 @@ export default function RecruitingNilTable({ rows = [], onOffer, title = 'Recrui
         return (
           <div className="nt-row nt-grid" key={r.id}>
             <div className="nt-name">
-              <b>{r.name}</b>
+              <b><PersonName name={r.name} kind="recruit" /></b>
               <span className="nt-sub">
                 {r.position} <StarRating value={r.stars} />{r.committed ? ' - Commit' : ''}
               </span>

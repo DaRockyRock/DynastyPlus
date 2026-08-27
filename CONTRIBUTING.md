@@ -48,6 +48,10 @@ reusable components under `frontend/src/components/` with colocated Storybook
 stories, and reusable components should be exported from
 `frontend/src/components/index.js`.
 
+The primary app runs at `http://127.0.0.1:5050`. For changes involving the
+sample-save Simulator, run `python run_sim.py` separately and open
+`http://127.0.0.1:5070`.
+
 ## Required checks
 
 Run these from the repository root before opening a pull request:

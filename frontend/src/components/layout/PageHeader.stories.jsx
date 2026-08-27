@@ -1,5 +1,6 @@
 import PageHeader from './PageHeader.jsx';
-import Button from '../ui/Button.jsx';
+import SourcePill from '../ui/SourcePill.jsx';
+import RegenerateButton from '../ui/RegenerateButton.jsx';
 
 export default {
   title: 'Layout/PageHeader',
@@ -11,9 +12,9 @@ export const Default = {
   render: () => (
     <div style={{ width: 760 }}>
       <PageHeader
-        title="Season"
-        sub="Start and step through a modeled college football season"
-        actions={<Button>Reset Season</Button>}
+        title="News Feed"
+        sub="National and program coverage from across the dynasty media universe"
+        actions={<><SourcePill source="mock" /><RegenerateButton /></>}
       />
     </div>
   ),

@@ -1,11 +1,12 @@
 """Fictional head coaches for every FBS team.
 
-CFB27 owns a head coach for every program; the season tool stands in until
+CFB27 owns a head coach for every program; the Simulator stands in for that until
 the real save format is readable. Each team gets a STABLE, FICTIONAL coach, seeded
 by the team name + the season seed, so:
 
-  * every program receives a distinct fictional coach for rankings, schedules,
-    and coaching data, and
+  * Dynasty+ can name a real person for any other program in its national coverage
+    (rankings, the coaching carousel, opponents) instead of inventing a real-life
+    coach (which the no-real-people rule forbids), and
   * the names are consistent week to week and across a save.
 
 Names come from first/last banks chosen to avoid real, recognizable head coaches.
@@ -114,7 +115,7 @@ def build_directory(universe: dict, records: dict, seed: int | str, *, user: str
                     user_hot_seat: int | None = None) -> dict[str, dict]:
     """The league's coaching directory: {team -> coach entity}. Each entity carries
     name, tenure, the team's record, a hot-seat heat and trend, and identity bits.
-    CFB27 owns this; the season tool stands in. The user's own program uses its
+    CFB27 owns this; the Simulator stands in. The user's own program uses its
     identity coach (name/tenure/hot seat from the customization store)."""
     names = coach_map(universe.keys(), seed)
     out: dict[str, dict] = {}

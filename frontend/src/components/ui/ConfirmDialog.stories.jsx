@@ -35,8 +35,9 @@ export const Default = {
 export const Danger = {
   render: () => (
     <Demo title="Delete Dynasty" confirmLabel="Delete Everything" danger>
-      This permanently wipes every simulated season, budget, exported snapshot,
-      and team customization. Dynasty+ Tools starts from scratch. This cannot be undone.
+      This permanently wipes every simulated season, all generated media, archives,
+      budget, and phone, feed, and news state, plus your team customization. Both
+      apps start completely from scratch. This cannot be undone.
     </Demo>
   ),
 };
@@ -44,7 +45,7 @@ export const Danger = {
 export const Busy = {
   render: () => (
     <Demo title="Delete Dynasty" confirmLabel="Delete Everything" danger busy>
-      Wiping every season and all Dynasty+ Tools state.
+      Wiping every season and all generated content.
     </Demo>
   ),
 };

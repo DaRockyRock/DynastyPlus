@@ -5,8 +5,9 @@ import ScoreOverrideForm from './ScoreOverrideForm.jsx';
 
 // The season driver's "up next" control surface: the upcoming user game with an
 // optional score override, and the controls that play the week. Two-step flow:
-// "Simulate Game" plays the week but stays on it, then "Advance" moves to the
-// next week. `simmed` flips the panel from pre-game to post-game.
+// "Simulate Game" plays the week but stays on it (so the post-game press
+// conference can run in Dynasty+ and feed this week's coverage), then "Advance"
+// moves to the next week. `simmed` flips the panel from pre-game to post-game.
 export default function SimControlPanel({
   week,
   userGame,
@@ -36,7 +37,8 @@ export default function SimControlPanel({
       {simmed ? (
         <>
           <p style={{ color: 'var(--chalk-3)', fontSize: 13, margin: '0 0 10px' }}>
-            Game played. Review the results, then advance when you are ready.
+            Game played. Answer the post-game press conference in Dynasty+ (it can run now while you
+            stay on this week), then advance when you are ready.
           </p>
           <Button variant="accent" icon={<Icons.PlayIcon />} onClick={onAdvance} spinning={busy} disabled={busy}>
             {busy ? 'Advancing...' : `Advance to Week ${week + 1}`}

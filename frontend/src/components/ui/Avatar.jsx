@@ -3,7 +3,7 @@ import { initials } from '../../lib/format.js';
 
 // Circular avatar. With `src` (a custom uploaded photo) it shows the image,
 // falling back to initials if the image fails to load. `gradient` uses the
-// team-colored gradient for program people; otherwise a neutral surface.
+// team-colored gradient used by phone contacts; otherwise a neutral surface.
 export default function Avatar({ name, label, size = 40, gradient = false, src = '' }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => { setFailed(false); }, [src]);

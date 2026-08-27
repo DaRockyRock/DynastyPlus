@@ -1,8 +1,9 @@
-"""Write an exportable dynasty snapshot.
+"""Writes the dynasty save file the Dynasty+ companion watches.
 
 The save is the full schema-conforming dynasty dict that sim/adapter.build_dynasty
-already produces, including the embedded budget snapshot and meta hash. Writes
-are atomic using a temporary file followed by os.replace.
+already produces (with the embedded budget snapshot + meta.hash). Writes are
+atomic: temp file then os.replace, which surfaces to the companion's watchdog as
+an on_moved event on the save path (the same atomic-save pattern real games use).
 """
 from __future__ import annotations
 
@@ -32,7 +33,7 @@ def write(year: int, week: int | None = None) -> dict[str, Any] | None:
     dynasty = adapter.build_dynasty(year, week)
     problems = schema.validate(dynasty)
     if problems:
-        # Never export a malformed snapshot.
+        # Never write a malformed save; the companion would reject it anyway.
         raise ValueError("save failed validation: " + "; ".join(problems))
     _SAVE.parent.mkdir(parents=True, exist_ok=True)
     with _TMP.open("w", encoding="utf-8") as fh:
@@ -42,7 +43,7 @@ def write(year: int, week: int | None = None) -> dict[str, Any] | None:
 
 
 def clear() -> None:
-    """Remove the exported snapshot on season reset."""
+    """Remove the save (e.g. on season reset) so the companion shows cold start."""
     try:
         _SAVE.unlink()
     except OSError:

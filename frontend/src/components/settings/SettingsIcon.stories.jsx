@@ -8,7 +8,8 @@ export default {
 
 const NAMES = [
   'shield', 'whistle', 'chart', 'swords', 'clipboard', 'jersey', 'star', 'target',
-  'unknown',
+  'newspaper', 'mic', 'binoculars', 'ballot', 'phone', 'gavel', 'fire', 'users',
+  'trophy', 'arrow-in', 'arrow-out', 'unknown',
 ];
 
 export const All = {

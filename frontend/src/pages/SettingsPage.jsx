@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../lib/api.js';
-import { useTools } from '../context/ToolsContext.jsx';
+import { useApp } from '../context/AppContext.jsx';
 import {
   SettingsHeader, SettingsNav, SettingsPanel, ObjectForm, EntityList, SettingsMetaProvider,
 } from '../components/index.js';
@@ -10,9 +10,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 // The Customize studio: a full-screen, schema-driven editor for every named
 // entity in the dynasty. Fetches the schema + current values once, holds an
 // in-memory working draft, and saves one section at a time. Closing the studio
-// pulls saved edits back into the running tools app.
+// pulls saved edits back into the running app (handled in AppContext).
 export default function SettingsPage() {
-  const { closeSettings, toast } = useTools();
+  const { closeSettings, toast } = useApp();
   const [schema, setSchema] = useState(null);
   const [saved, setSaved] = useState({});
   const [draft, setDraft] = useState({});

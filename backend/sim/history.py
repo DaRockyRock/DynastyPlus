@@ -1,13 +1,15 @@
 """Program history (prior seasons) for a dynasty.
 
 CFB 27 stores a program's full history. We model that here: when a dynasty
-starts, Dynasty+ Tools generates the program's recent seasons (records,
-conference finish, final ranking, postseason result, and who coached). The
+starts, the Simulator generates the program's recent seasons (records, conference
+finish, final ranking, postseason result, and who coached) so the companion has
+real "last year's results" and a grounded coaching-change story on day one. The
 most recent `tenure_years - 1` seasons are attributed to the user's coach; the
 earlier ones to the predecessor (named in the program blueprint, or generated).
 
 Deterministic from the season seed so the same dynasty always has the same past.
-Persisted inside the season state and projected into the dynasty snapshot.
+Persisted inside the season state (state.py) and projected into the save by the
+adapter, so Dynasty+ reads it from the dynasty dict like everything else.
 """
 from __future__ import annotations
 

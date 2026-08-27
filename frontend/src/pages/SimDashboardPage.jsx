@@ -1,21 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTools } from '../context/ToolsContext.jsx';
+import { useApp } from '../context/AppContext.jsx';
 import { api } from '../lib/api.js';
 import {
-  PageHeader, Button, EmptyState, WeekNav, ConfirmDialog,
-  NewSeasonForm, SimStatusCard, Scoreboard, SimControlPanel,
+  PageHeader, SectionTitle, Button, EmptyState, WeekNav, ConfirmDialog,
+  NewSeasonForm, SimStatusCard, Scoreboard, SimControlPanel, InboxDrainPanel,
 } from '../components/index.js';
 
-// Start a season, simulate games, and advance through the schedule.
+// The Simulator's season driver: start a season, then step week to week. Each
+// advance drains any companion coach actions, sims the FBS slate, and rewrites
+// the save the Dynasty+ companion watches. Composed entirely from the library.
 export default function SimDashboardPage() {
   const {
     sim, simBusy, simActive, startSeason, simulateGame, advanceSim, resetSim, deleteDynasty,
-    pointer, fbsTeams, team, teamBusy, setUserTeam,
-  } = useTools();
+    pointer, reloadKey, fbsTeams, team, teamBusy, setUserTeam,
+  } = useApp();
 
   const [viewWeek, setViewWeek] = useState(1);
   const [games, setGames] = useState([]);
   const [userGame, setUserGame] = useState(null);
+  const [pending, setPending] = useState([]);
   const [override, setOverride] = useState({ enabled: false, value: { user_score: '', opp_score: '' } });
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -32,6 +35,13 @@ export default function SimDashboardPage() {
   }, [simActive, year]);
 
   useEffect(() => { loadBoard(viewWeek); }, [viewWeek, loadBoard, week]);
+
+  // Coach actions queued by the companion, applied on the next advance.
+  const loadInbox = useCallback(async () => {
+    try { const r = await api.inbox({ year }); setPending(r.pending || []); }
+    catch { setPending([]); }
+  }, [year]);
+  useEffect(() => { if (simActive) loadInbox(); }, [simActive, loadInbox, reloadKey]);
 
   useEffect(() => {
     if (!simActive || !week) { setUserGame(null); return; }
@@ -78,8 +88,9 @@ export default function SimDashboardPage() {
       onClose={() => setConfirmDelete(false)}
       onConfirm={onDelete}
     >
-      This permanently wipes every simulated season, its budget, the exported
-      dynasty snapshot, and your team customization. This cannot be undone.
+      This permanently wipes every simulated season and all generated media, archives,
+      budget, and phone, feed, and news state, plus your team customization. Both apps
+      start completely from scratch. This cannot be undone.
     </ConfirmDialog>
   );
 
@@ -123,7 +134,7 @@ export default function SimDashboardPage() {
       />
       <SimStatusCard status={sim} />
 
-      <div style={{ margin: '18px 0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'start', margin: '18px 0' }}>
         <SimControlPanel
           week={sim.week}
           userGame={userGame}
@@ -135,6 +146,7 @@ export default function SimDashboardPage() {
           onAdvance={onAdvance}
           busy={simBusy}
         />
+        <InboxDrainPanel actions={pending} />
       </div>
 
       <Scoreboard

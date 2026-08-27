@@ -1,8 +1,16 @@
-"""Build a schema-conforming dynasty snapshot from the season state.
+"""Sim universe -> schema-conforming dynasty dict.
 
-The season engine supplies records, polls, standings, statistics, and schedules.
-The customization store supplies program identity, staff, roster, recruiting,
-portal, NIL, and rival names.
+This is the bridge that lets the simulation stand in for mock_data.generate
+behind pipeline.load_dynasty. It reads the persisted season (state.py) plus the
+customization store and emits the exact same dynasty shape the generation modules
+already consume, field for field, including the extras beyond schema.py that the
+modules and UI rely on (national.coaches_top25, receiving votes, schedule.full,
+team.stats.ranks, poll-row points/first, team color/logo).
+
+Ownership: the sim fills everything that flows from played games (records, polls,
+standings, team + player stats, opponent records/ranks, the Heisman board). The
+customization store still owns identity, staff, roster, recruiting, portal, NIL,
+and rival names; rival records are looked up from the sim.
 """
 from __future__ import annotations
 
@@ -177,13 +185,17 @@ def build_dynasty(year: int, week: int) -> dict[str, Any]:
         },
     }
 
-    # Program history provides context for the current season.
+    # The program's prior-season history (records, ranks, postseason, coaches),
+    # so the companion can open on the real landscape (last year, the coaching
+    # change) rather than a blank slate.
     dynasty["history"] = st.get("history") or []
 
     # Every FBS program gets a fictional head coach (CFB27 owns a coach for every
     # team; this stands in until the real save is readable). dynasty["coaches"] is
     # the full directory (team -> coach entity with name, tenure, record, hot-seat
-    # heat). The user's own program keeps its customized identity coach.
+    # heat) that the hot-seat board, the phone, and national coverage all read, so
+    # the companion names a real person for other programs instead of inventing a
+    # real-life coach. The user's own program keeps its identity coach.
     cdir = sim_coaches.build_directory(
         universe, records, st["seed"], user=user,
         user_coach=hc.get("name"), user_tenure=hc.get("tenure_years"), user_hot_seat=hc.get("hot_seat"))
@@ -210,14 +222,16 @@ def build_dynasty(year: int, week: int) -> dict[str, Any]:
 
     # The user's most recently completed game, reconstructed in full (drives,
     # plays, both box scores, scoring summary) from the canonical final score.
-    # Deterministic and timestamp-free so it does not churn meta.hash. Absent on a
-    # bye or before the first game.
+    # Deterministic and timestamp-free so it does not churn meta.hash. Drives the
+    # Game Center and gives the post-game press conference the whole game. Absent
+    # on a bye / before the first game.
     last_game = playbyplay.build_for_user(st, played_through, user_players)
     if last_game:
         dynasty["last_game"] = last_game
 
-    # Embed the authoritative budget and stamp an explicit pointer plus a stable
-    # content hash for snapshot consumers.
+    # Embed the authoritative NIL/budget snapshot so Dynasty+ reads it straight
+    # from the save (it no longer owns the budget store). Then stamp the explicit
+    # pointer and a content hash the watcher uses to detect same-week edits.
     dynasty["budget"] = budget.snapshot(year, week, dynasty)
     dynasty["meta"]["pointer"] = {"year": year, "week": week}
     dynasty["meta"]["hash"] = _content_hash(dynasty)
@@ -225,10 +239,18 @@ def build_dynasty(year: int, week: int) -> dict[str, Any]:
 
 
 def _content_hash(dynasty: dict[str, Any]) -> str:
-    """Stable sha1 over the season content. Excludes two volatile blobs:
+    """Stable sha1 over the MEDIA-AFFECTING content, so the companion can tell a
+    real edit from a no-op rewrite. Excludes two volatile blobs:
 
       * meta   - carries the volatile generated_at timestamp.
-      * budget - the live NIL/Dynasty Points snapshot, which has its own state.
+      * budget - the live NIL/Dynasty Points snapshot. It churns on every coach
+                 NIL offer or recruiting action (the Simulator drains the inbox and
+                 rewrites the save), but spending NIL does NOT change the news,
+                 recruiting board, rankings, or any generated media. Folding it into
+                 the hash made every offer look like a same-week edit and forced the
+                 companion to regenerate the whole week. The companion still reads
+                 the fresh budget straight from the save; only a real content change
+                 (roster, results, week, identity) should regenerate media.
     """
     content = {k: v for k, v in dynasty.items() if k not in ("meta", "budget")}
     blob = json.dumps(content, sort_keys=True, default=str, ensure_ascii=False)
@@ -287,7 +309,10 @@ def _roster(user_players: list[dict[str, Any]], sim_players: list[dict[str, Any]
 
 
 def _stat_leaders(leaders: dict[str, list[dict[str, Any]]] | None) -> dict[str, list[dict[str, Any]]]:
-    """Trim the stat-leader board to the top few players in each category."""
+    """Trim the computed stat-leader board (passing/rushing/receiving/sacks) to the
+    top few per category, carrying just identity + the formatted line. National
+    coverage cites these so a story can name the country's leading passer or sack
+    artist instead of inventing one."""
     out: dict[str, list[dict[str, Any]]] = {}
     for cat, lst in (leaders or {}).items():
         out[cat] = [
@@ -302,7 +327,7 @@ def _scoreboard_block(st: dict[str, Any], week: int, played_through: int,
                       records, poll, universe) -> list[dict[str, Any]]:
     """Every FBS game in the displayed week: both sides' identity, record, and
     AP rank, plus the rating-derived betting line. This is the save's national
-    slate for the exported snapshot and the Season scoreboard."""
+    slate; the companion ranks it client-side into the marquee matchups rail."""
     ap_order = poll["_ap_order"]
     user = st["user_team"]
 

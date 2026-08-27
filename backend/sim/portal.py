@@ -303,7 +303,8 @@ def user_outgoing_names(year: int) -> set[str]:
 
 def user_board(year: int, universe: dict[str, Any] | None = None) -> dict[str, list[dict[str, Any]]]:
     """The user's portal board: incoming (committed in), outgoing (real departures),
-    and targets (incoming entrants the user is pursuing)."""
+    and targets (incoming entrants the user is pursuing). Shaped for the Dynasty+
+    portal page (name/position/from/to + interest/stage/grade)."""
     st = get(year)
     if not st:
         return {"incoming": [], "outgoing": [], "targets": []}
