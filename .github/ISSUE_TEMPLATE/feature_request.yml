@@ -13,10 +13,14 @@ body:
     attributes:
       label: Area
       options:
-        - Season
-        - Customize
-        - NIL
-        - Recruiting
+        - Dynasty library and import
+        - Home and Game Center
+        - News and phone
+        - CFP committee and bracket
+        - Recruiting, NIL, and portal
+        - Hot seat, awards, and archive
+        - Settings and model connection
+        - Sample-save Simulator
         - Developer tooling
         - Other
     validations:

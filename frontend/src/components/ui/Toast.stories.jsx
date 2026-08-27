@@ -7,4 +7,4 @@ export default {
 };
 
 export const Default = { args: { message: 'Advanced to Week 11' } };
-export const Saved = { args: { message: 'Blueprint saved' } };
+export const Regenerated = { args: { message: 'Regenerated top stories' } };

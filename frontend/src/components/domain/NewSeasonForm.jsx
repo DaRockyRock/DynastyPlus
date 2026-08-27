@@ -10,7 +10,7 @@ import TeamSelect from './TeamSelect.jsx';
 // Spin up a fresh simulated FBS season. Pick your program, then year + optional
 // seed; the same seed and year reproduce the same season. Used when no season is
 // active. The team picker swaps the user's program (identity + its real local
-// customization) before kickoff; once a season is running it cannot change.
+// media) before kickoff; once a season is running it cannot change.
 export default function NewSeasonForm({
   defaultYear = 2027,
   busy = false,

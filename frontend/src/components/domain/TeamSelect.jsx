@@ -1,7 +1,7 @@
 import TeamLogo from '../ui/TeamLogo.jsx';
 
 // FBS team picker: a native select grouped by conference, with a live logo
-// preview of the chosen program. Used on the Season start screen to
+// preview of the chosen program. Used on the Simulator's season-start screen to
 // change the user's team before kickoff. `teams` is the FBS list from
 // /api/sim/fbs-teams ({ name, conference, espn_id, abbreviation, color, logo }).
 export default function TeamSelect({ teams = [], value, onChange, disabled = false, placeholder = 'Select a team' }) {

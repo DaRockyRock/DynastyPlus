@@ -1,4 +1,22 @@
-"""Schema, persistence, and persona helpers for tools customization."""
+"""Shared machinery for the two customization stores.
+
+The customization data splits along the game/media boundary that the two-app
+architecture draws:
+
+  * customization_game.py - team identity, head coach, program blueprint, staff,
+    roster, recruits, the transfer portal, rivals. This is GAME data, owned and
+    edited by the Simulator (a CFB 27 stand-in) and written into the save file.
+  * customization.py - reporters, outlets, the CFP committee, the hot-seat board,
+    award voters, awards, phone contacts. This is MEDIA flavor, owned and edited
+    by the Dynasty+ companion and read directly by the generation modules.
+
+Each store owns a disjoint set of sections persisted to its own JSON file, so the
+two apps never write the same file. Everything they share - the declarative field
+schema, persona enrichment, the no-em-dash / no-emoji house rules, and the
+merge/persist logic - lives here as a `Store` the two modules instantiate.
+
+This module is a leaf: it depends only on config + personality.
+"""
 from __future__ import annotations
 
 import copy
@@ -18,16 +36,26 @@ DEALBREAKERS = [
     "Proximity to Home", "Championship Culture", "Coaching Stability",
 ]
 RECRUIT_STAGES = ["Open", "Top 10", "Top 5", "Top 3", "Verbal", "Hard Commit", "Committed"]
+BEATS = ["national", "recruiting", "program", "carousel", "portal", "feature"]
+TRENDS = ["up", "flat", "down"]
+CONTACT_CATEGORIES = ["Staff", "Players", "Recruits", "Coaches", "Media"]
+ENTITY_KINDS = ["none", "recruit", "player", "staff", "budget"]
 
 # Precomputed option lists for the schema field definitions.
 DEALBREAKER_OPTS = [{"value": d, "label": d} for d in DEALBREAKERS]
 STAGE_OPTS = [{"value": s, "label": s} for s in RECRUIT_STAGES]
 YEAR_OPTS = [{"value": y, "label": y} for y in CLASS_YEARS]
+BEAT_OPTS = [{"value": b, "label": b.title()} for b in BEATS]
+TREND_OPTS = [{"value": t, "label": t.title()} for t in TRENDS]
+CATEGORY_OPTS = [{"value": c, "label": c} for c in CONTACT_CATEGORIES]
+ENTITY_OPTS = [{"value": k, "label": k.title()} for k in ENTITY_KINDS]
 
+# The options bundle handed to the frontend editor (same for both stores).
 EDITOR_OPTIONS = {
     "dealbreakers": DEALBREAKERS,
     "stages": RECRUIT_STAGES,
     "class_years": CLASS_YEARS,
+    "beats": BEATS,
 }
 
 
@@ -86,7 +114,7 @@ class Store:
 
     Defaults are the canonical seed; only what the user changed is written to
     `store_file`, overlaid on the defaults at read time. `on_change` fires after
-    any mutation when the caller needs a follow-up action.
+    any mutation (e.g. invalidate the per-week cache, or rewrite the save file).
     """
 
     def __init__(self, *, store_file: Path, defaults: dict[str, Any],
@@ -165,13 +193,14 @@ class Store:
             "options": {**EDITOR_OPTIONS, "personality_traits": personality.PERSONALITY_TRAITS},
         }
 
-    def generate_person(self, key: str, seed: dict[str, Any] | None = None) -> dict[str, Any]:
+    def generate_person(self, key: str, seed: dict[str, Any] | None = None,
+                        *, use_llm: bool = False) -> dict[str, Any]:
         """A fresh persona (random sliders + a bio) for a new person in a section."""
         if key not in self._defaults:
             raise KeyError(f"unknown customization section: {key}")
         meta = self._by_key.get(key) or {}
         noun = meta.get("noun", "person")
-        return personality.generate_person(seed or {}, noun=noun)
+        return personality.generate_person(seed or {}, noun=noun, use_llm=use_llm)
 
     # --- writes -----------------------------------------------------------
     def set_section(self, key: str, value: Any) -> dict[str, Any]:

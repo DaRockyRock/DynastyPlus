@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useTools } from '../context/ToolsContext.jsx';
+import { useApp } from '../context/AppContext.jsx';
 import { api } from '../lib/api.js';
 import {
   PageHeader, Skeleton, EmptyState, RecruitFilters, RecruitBoard,
@@ -7,10 +7,11 @@ import {
 
 const NUMERIC_DESC = new Set(['ovr', 'stars', 'expected_nil', 'status']);
 
-// Browse the full national class as it commits week to week. Offers to the
-// user's board recruits happen on the NIL tab.
+// The national recruit board for the Simulator: browse the full class as it
+// commits week to week. Offers to the user's own board recruits happen on the
+// NIL tab (which writes the authoritative budget); this view is the scouting lens.
 export default function SimRecruitingPage() {
-  const { simActive, pointer, reloadKey } = useTools();
+  const { simActive, pointer, reloadKey } = useApp();
   const [national, setNational] = useState(null);
   const [filters, setFilters] = useState({ q: '', position: '', stars: '0', status: 'all' });
   const [sort, setSort] = useState({ key: 'national_rank', dir: 1 });

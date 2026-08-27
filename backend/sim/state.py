@@ -1,7 +1,8 @@
 """The persistent simulated season.
 
-One JSON document per season at data/sim/<year>.json. The document is
-intentionally canonical and minimal: it stores the universe
+One JSON document per season at data/sim/<year>.json, the same "one file per
+season, overlaid on the customization store" pattern budget.py and narrative.py
+use. The document is intentionally canonical-and-minimal: it stores the universe
 (teams + ratings), the full generated schedule, and the locked game results.
 Everything else (records, standings, polls, stats, the Heisman board) is a pure
 function of those results, recomputed on demand, so there is nothing to keep in
@@ -87,7 +88,9 @@ def new_season(year: int, seed: int | None = None) -> dict[str, Any]:
         "seed": seed,
         "active": True,
         "created": _dt.datetime.now().isoformat(timespec="seconds"),
-        # Stable unique id for this dynasty and its exported snapshots.
+        # Stable unique id for this dynasty/world. Stamped into the save so the
+        # companion scopes all of its per-dynasty data (texts, news, feed,
+        # storylines) to it and nothing leaks between dynasties.
         "dynasty_id": f"{_slug(user_team)}-{seed}",
         "user_team": user_team,
         "weeks_total": schedule.WEEKS,
@@ -95,12 +98,13 @@ def new_season(year: int, seed: int | None = None) -> dict[str, Any]:
         # The highest week whose games are finalized and surfaced as "played"
         # (recent_results / last_game). Normally current_week - 1, but it equals
         # current_week after simulate_week locks this week's games without
-        # advancing, so results can be reviewed while the clock stays put.
+        # advancing, so the post-game presser can run while the clock stays put.
         "sim_through": 0,
         "teams": universe,
         "schedule": sched,
         "results": {},
-        # The program's prior seasons (records, ranks, postseason, and coaches).
+        # The program's prior seasons (records, ranks, postseason, who coached),
+        # so the companion has real history + a coaching-change story on day one.
         "history": history.build(year, seed, universe, user_team,
                                  customization.head_coach(), customization.program()),
     }
@@ -151,7 +155,10 @@ def _lock_week(st: dict[str, Any], year: int, week: int,
 def simulate_week(year: int, override: dict[str, Any] | None = None) -> dict[str, Any]:
     """Play the current week's games and lock them in WITHOUT advancing the week.
 
-    Call advance() to move to the next week and run the recruiting cycle."""
+    The companion then surfaces the result (recent_results / last_game) and runs
+    the post-game press conference while the season clock stays on this week, so
+    the coach's answers can feed this week's articles, texts, and recruiting. Call
+    advance() to move to the next week (that is what runs the recruiting cycle)."""
     with _lock:
         st = get(year)
         if not st or not st.get("active"):

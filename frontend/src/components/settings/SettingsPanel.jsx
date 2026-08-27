@@ -13,7 +13,7 @@ export default function SettingsPanel({ section, dirty, saving, onSave, onReset,
         </div>
         <div className="ph-actions">
           {dirty ? <span className="set-dirty">Unsaved</span> : <span className="set-saved">Saved</span>}
-          <Button variant="compact" onClick={onReset} title="Revert this section to the default">
+          <Button variant="regen" onClick={onReset} title="Revert this section to the default">
             <RefreshIcon size={13} />Reset
           </Button>
           <Button variant="accent" onClick={onSave} disabled={!dirty || saving} spinning={saving}>

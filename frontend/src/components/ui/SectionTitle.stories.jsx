@@ -1,5 +1,6 @@
 import SectionTitle from './SectionTitle.jsx';
-import Button from './Button.jsx';
+import SourcePill from './SourcePill.jsx';
+import RegenerateButton from './RegenerateButton.jsx';
 
 export default {
   title: 'UI/SectionTitle',
@@ -7,13 +8,13 @@ export default {
   parameters: { layout: 'padded' },
 };
 
-export const Plain = { args: { children: 'Recruiting Board' } };
+export const Plain = { args: { children: 'Top Stories' } };
 
 export const WithRight = {
   render: () => (
     <div style={{ width: 520 }}>
-      <SectionTitle right={<Button>Adjust</Button>}>
-        NIL Allocation
+      <SectionTitle right={<><SourcePill source="mock" /><RegenerateButton /></>}>
+        Top Stories
       </SectionTitle>
     </div>
   ),
@@ -22,7 +23,7 @@ export const WithRight = {
 export const WithNote = {
   render: () => (
     <div style={{ width: 520 }}>
-      <SectionTitle note="Sorted by national rank">Top Prospects</SectionTitle>
+      <SectionTitle note="Ranked by the matchup algorithm">Marquee Matchups</SectionTitle>
     </div>
   ),
 };

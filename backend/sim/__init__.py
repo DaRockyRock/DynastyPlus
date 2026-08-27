@@ -1,7 +1,11 @@
-"""Stateful, persisted, all-FBS season simulation for Dynasty+ Tools.
+"""Season simulation engine.
 
-Every team has a rating and a schedule. Games are simulated week to week, and
-records, polls, standings, recruiting, and player stats emerge from the results.
+A stateful, persisted, all-FBS season that stands in for the static mock behind
+pipeline.load_dynasty: every team has a rating and a schedule, games are
+simulated week to week, and records, polls, standings, and player stats all
+emerge from the results. Drives the in-app Debug mode (start a season, advance
+and override results). Forward-compatible with the real CFB 27 save parser, which
+becomes a third dynasty source alongside mock and sim.
 
 Layers:
   league    - the FBS universe + per-season ratings (reads data/league_seed.json)
@@ -12,7 +16,7 @@ Layers:
   standings - records + conference tables
   state     - the persisted season (new / advance / scoreboard / reset)
   recruiting- the national recruiting cycle (class generation + weekly process)
-  adapter   - season state to schema-conforming dynasty snapshot
+  adapter   - sim -> schema-conforming dynasty dict
 """
 from __future__ import annotations
 

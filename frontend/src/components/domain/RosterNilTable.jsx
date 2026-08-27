@@ -3,6 +3,7 @@ import Button from '../ui/Button.jsx';
 import MoneyValue from '../ui/MoneyValue.jsx';
 import HeatBar from '../ui/HeatBar.jsx';
 import DealbreakerTag from '../ui/DealbreakerTag.jsx';
+import PersonName from '../people/PersonName.jsx';
 
 // Roster NIL retention table: each key player with what they expect, what you
 // pay now, and their risk of leaving. `onOffer(row)` opens the pay editor.
@@ -18,7 +19,7 @@ export default function RosterNilTable({ rows = [], onOffer, title = 'Roster NIL
         return (
           <div className="nt-row nt-grid-roster" key={r.id}>
             <div className="nt-name">
-              <b>{r.name}</b>
+              <b><PersonName name={r.name} kind="player" /></b>
               <span className="nt-sub">{r.position} - {r.year}</span>
               <DealbreakerTag value={r.dealbreaker} />
             </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import ToolsApp from './ToolsApp.jsx';
+import App from './App.jsx';
 
 // Athletic broadcast type system: Saira (body) + Saira Condensed (display).
 import '@fontsource/saira/400.css';
@@ -16,6 +16,6 @@ import './styles/global.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ToolsApp />
+    <App />
   </React.StrictMode>
 );

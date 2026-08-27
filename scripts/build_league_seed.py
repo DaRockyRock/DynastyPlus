@@ -1,6 +1,6 @@
 """Build data/league_seed.json: the FBS universe the simulation engine runs on.
 
-One-time refresh builder. It pulls the
+One-time / refresh builder (run manually, like analyze_bracket.py). It pulls the
 current FBS conference alignment from ESPN's public standings endpoint (a single
 request that returns every conference and its teams), merges a curated power
 rating + prestige table for brand programs with conference-tier baselines for

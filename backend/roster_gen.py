@@ -5,8 +5,8 @@ roster. This builds that roster: an 85-man depth chart for the user's team with 
 realistic position distribution, a rating curve that tapers by depth, plausible
 classes / jersey numbers / NIL / retention risk, and unique names. It seeds
 customization_game.DEFAULTS["players"]; the Store overlays the coach's edits on
-top, the adapter writes it into the snapshot, and the NIL tools read it from
-there.
+top, the adapter writes it into the save, and the NIL board, phone, and archive
+all read it straight from there.
 
 Determinism matters: the roster is part of the save's content hash, so a fixed
 seed keeps it byte-stable across process restarts and avoids churning meta.hash.
@@ -275,7 +275,8 @@ def _build() -> list[dict[str, Any]]:
     for p in players:
         p.pop("_starter", None)
 
-    # Lead with the headliners so compact roster views surface the stars first.
+    # Lead with the headliners so [:5]/[:6] consumers (archive, article search)
+    # and the roster view surface the stars first.
     players.sort(key=lambda p: (p["rating"], p["position"] == "QB"), reverse=True)
     return players
 
@@ -317,7 +318,8 @@ def _star_name(position: str) -> str:
     return ""
 
 
-# The top QB and RB are exposed as stable program identities.
+# The top QB and RB, exposed so the media store's seed phone contacts can link to
+# real roster players for in-chat NIL offers.
 STAR_QB_NAME = _star_name("QB")
 STAR_RB_NAME = _star_name("RB")
 STAR_QB_AVATAR = _initials(STAR_QB_NAME)

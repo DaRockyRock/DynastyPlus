@@ -3,7 +3,8 @@
 This is the source of truth for everything the coach (the user) actively spends:
 Dynasty Points allocation, NIL offers to recruits and roster players, and the
 weekly recruiting hours poured into prospects. It overlays the deterministic
-season state so a $250k offer made in Week 10 persists across reloads.
+mock dynasty (the same way narrative.py overlays persistent storylines) so a
+$250k offer made in Week 10 survives regeneration and week navigation.
 
 CFB 27 model (see CLAUDE.md / EA deep dive), built out as documented
 assumptions until the save format is readable:
@@ -17,8 +18,8 @@ assumptions until the save format is readable:
   - Roster NIL: per-player pay tied to a risk-of-leaving meter.
   - Weekly recruiting hours are spent on actions ("Send the House", visits, ...).
 
-All money math and simulation lives here so the numbers remain exact. State is
-stored as one JSON document per season at data/budget/<year>.json.
+All money math + simulation lives here so the numbers are exact and never
+LLM-invented. Stored as one JSON document per season at data/budget/<year>.json.
 """
 from __future__ import annotations
 
@@ -381,7 +382,8 @@ def set_nil_offer(year: int, week: int, eid: str, kind: str, amount: int, dynast
         "interest": new_interest,
         "stage": new_stage,
         "over_budget": snap["nil"]["recruiting"]["available"] < 0,
-        # Whether this offer crossed the recruit's expected value for the first time.
+        # Did this cross the recruit's expected number for the first time? Lets
+        # the Dynasty+ side seed a "big offer" media storyline from the save.
         "crossed_expected": bool(amount >= expected and amount > prev_amount and expected),
         "message": _recruit_offer_message(recruit["name"], amount, expected, influence, new_stage),
     }
@@ -440,7 +442,140 @@ def spend_recruiting_action(year: int, week: int, eid: str, action_key: str, dyn
     return {"snapshot": snap, "effect": effect}
 
 
-# --- user-facing result messages ------------------------------------------
+# --- pure projections (Dynasty+ side; no store writes) --------------------
+# Dynasty+ does not own the budget store (the Simulator does) and never mutates
+# it. When the coach makes an offer in the companion it is queued to the inbox
+# and applied by the Simulator; these compute the effect it WOULD have so the UI
+# can show an optimistic, clearly-pending result until the authoritative save
+# arrives. They read only the dynasty dict (the save), never the store.
+def _interest_from_snapshot(snap: dict, eid: str, fallback: int) -> int:
+    for r in (snap or {}).get("recruiting_nil", []):
+        if r.get("id") == eid:
+            return int(r.get("interest", fallback))
+    return int(fallback)
+
+
+def project_nil_offer(eid: str, kind: str, amount: int, dynasty: dict) -> dict[str, Any]:
+    base = _nil_base(dynasty)
+    amount = max(0, int(amount))
+    snap = dynasty.get("budget") or {}
+    if kind == "player":
+        player = _find_player(dynasty, eid)
+        if not player:
+            return {"error": "unknown player"}
+        expected = int(player.get("expected_nil", 0))
+        amount = int(_clamp(amount, 0, expected * 2 if expected else amount))
+        risk = adjusted_risk(int(player.get("risk_of_leaving", 20)), amount, expected)
+        return {"kind": "nil_offer", "entity_kind": "player", "id": eid, "name": player["name"],
+                "amount": amount, "expected": expected, "risk_of_leaving": risk, "pending": True,
+                "message": _player_offer_message(player["name"], amount, expected, risk)}
+    recruit, _committed = _find_recruit(dynasty, eid)
+    if not recruit:
+        return {"error": "unknown recruit"}
+    expected = int(recruit.get("expected_nil", 0))
+    amount = int(_clamp(amount, 0, expected * 2 if expected else amount))
+    influence = influence_from_offer(amount, expected)
+    base_interest = _interest_from_snapshot(snap, eid, recruit.get("interest", 0))
+    new_interest = int(_clamp(base_interest + influence, 0, 100))
+    new_stage = stage_for_interest(new_interest)
+    return {"kind": "nil_offer", "entity_kind": "recruit", "id": eid, "name": recruit["name"],
+            "amount": amount, "expected": expected, "influence_delta": influence,
+            "interest": new_interest, "stage": new_stage, "pending": True,
+            "message": _recruit_offer_message(recruit["name"], amount, expected, influence, new_stage)}
+
+
+def project_recruiting_action(eid: str, action_key: str, dynasty: dict) -> dict[str, Any]:
+    action = _ACTION_BY_KEY.get(action_key)
+    if not action:
+        return {"error": "unknown action"}
+    recruit, _committed = _find_recruit(dynasty, eid)
+    if not recruit:
+        return {"error": "unknown recruit"}
+    snap = dynasty.get("budget") or {}
+    remaining = int((snap.get("recruiting_hours") or {}).get("remaining", 0))
+    if remaining < action["hours"]:
+        return {"kind": "recruiting_action", "ok": False, "id": eid, "name": recruit["name"],
+                "action_label": action["label"], "hours": action["hours"], "remaining": remaining,
+                "pending": True,
+                "message": f"Not enough recruiting hours left this week ({remaining} of {action['hours']} needed)."}
+    influence = action["influence"]
+    base_interest = _interest_from_snapshot(snap, eid, recruit.get("interest", 0))
+    new_interest = int(_clamp(base_interest + influence, 0, 100))
+    new_stage = stage_for_interest(new_interest)
+    return {"kind": "recruiting_action", "ok": True, "id": eid, "name": recruit["name"],
+            "action_key": action_key, "action_label": action["label"], "hours": action["hours"],
+            "remaining": remaining - action["hours"], "influence_delta": influence,
+            "interest": new_interest, "stage": new_stage, "pending": True,
+            "message": _action_message(recruit["name"], action["label"], influence, new_stage)}
+
+
+# --- chat markers ---------------------------------------------------------
+def marker_for(contact: dict, year: int, week: int, dynasty: dict) -> dict[str, Any] | None:
+    """The budget marker shown in a contact's chat header, by contact type."""
+    entity = contact.get("entity")
+    if not entity:
+        return None
+    snap = snapshot(year, week, dynasty)
+    kind = entity.get("kind")
+
+    if kind == "recruit":
+        eid = entity_id(entity["name"])
+        row = next((r for r in snap["recruiting_nil"] if r["id"] == eid), None)
+        if not row:
+            return None
+        return {
+            "kind": "recruit",
+            "id": eid,
+            "name": row["name"],
+            "expected_nil": row["expected_nil"],
+            "offer": row["offer"],
+            "floor": row["floor"],
+            "interest": row["interest"],
+            "stage": row["stage"],
+            "dealbreaker": row["dealbreaker"],
+            "hours_remaining": snap["recruiting_hours"]["remaining"],
+            "hours_total": snap["recruiting_hours"]["total"],
+        }
+
+    if kind == "player":
+        eid = entity_id(entity["name"])
+        row = next((r for r in snap["roster_nil"] if r["id"] == eid), None)
+        if not row:
+            return None
+        return {
+            "kind": "player",
+            "id": eid,
+            "name": row["name"],
+            "year": row.get("year"),
+            "position": row.get("position"),
+            "depth_chart_slot": row.get("depth_chart_slot"),
+            "expected_nil": row["expected_nil"],
+            "current_nil": row["current_nil"],
+            "risk_of_leaving": row["risk_of_leaving"],
+            "dealbreaker": row["dealbreaker"],
+        }
+
+    if kind == "budget":
+        return {
+            "kind": "budget",
+            "available_dp": snap["dynasty_points"]["available"],
+            "total_dp": snap["dynasty_points"]["total"],
+            "recruiting_available": snap["nil"]["recruiting"]["available"],
+            "roster_available": snap["nil"]["roster"]["available"],
+            "hours_remaining": snap["recruiting_hours"]["remaining"],
+        }
+
+    if kind == "staff":
+        return {
+            "kind": "staff",
+            "hours_remaining": snap["recruiting_hours"]["remaining"],
+            "hours_total": snap["recruiting_hours"]["total"],
+        }
+
+    return None
+
+
+# --- message flavor (mock-side; LLM gets the numbers in its prompt) -------
 def _short(n: int) -> str:
     n = int(n)
     if n >= 1_000_000:

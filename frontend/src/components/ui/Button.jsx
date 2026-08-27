@@ -1,11 +1,11 @@
 // Base button. Variants map to the design-system button styles.
 //   action - bordered surface button with optional icon + label (default)
 //   accent - filled team-color button
-//   compact - compact bordered button
+//   regen  - compact "regenerate" style button
 const VARIANT_CLASS = {
   action: 'icon-btn',
   accent: 'icon-btn accent',
-  compact: 'icon-btn compact',
+  regen: 'regen-btn',
 };
 
 export default function Button({

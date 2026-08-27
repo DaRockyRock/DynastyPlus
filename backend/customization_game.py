@@ -1,12 +1,17 @@
-"""Editable Dynasty+ Tools program data.
+"""Game-data customization store (owned by the Simulator).
 
 Team identity, the head coach, the program/NIL blueprint, the coaching staff,
 the roster, recruits, the transfer portal, and rivals. This is the editable
-identity layer projected into the dynasty snapshot by sim/adapter.build_dynasty.
-It is persisted to data/customization_game.json.
+identity layer the Simulator projects into the dynasty save file (see
+sim/adapter.build_dynasty); the Dynasty+ companion reads it from the save, not
+from here. Edited only by the Simulator app, persisted to
+data/customization_game.json.
+
+Shares all machinery with the media store via customization_base.Store.
 """
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from . import config, roster_gen
@@ -49,7 +54,7 @@ DEFAULTS: dict[str, Any] = {
         "recruiting_pool": 5500000,
         "roster_pool": 5000000,
         "weekly_recruiting_hours": config.WEEKLY_RECRUITING_HOURS,
-        # Who the head coach replaced (optional). The season tool generates the
+        # Who the head coach replaced (optional). The Simulator generates the
         # program's prior-season history at dynasty start; if this is set, the
         # seasons before the user's tenure are attributed to this coach. The head
         # coach's tenure_years drives the "new coach's first season" angle (set it
@@ -66,9 +71,9 @@ DEFAULTS: dict[str, Any] = {
         {"name": "Pete Janowski", "role": "Special Teams Coordinator", "notable": "Top-10 net punting", "image": ""},
     ],
     # A full 85-man scholarship roster, generated deterministically by the
-    # roster generator the way CFB 27 ships every program a complete depth
+    # Simulator (roster_gen) the way CFB 27 ships every program a complete depth
     # chart. The coach's edits overlay this seed; the adapter writes it into the
-    # snapshot, and the NIL board reads it from there.
+    # save, and the NIL board / phone / archive read it straight from there.
     "players": roster_gen.build_roster(),
 
     # ---- Recruiting ----
@@ -108,7 +113,8 @@ DEFAULTS: dict[str, Any] = {
     ],
 
     # The transfer portal is no longer seeded here: it is fully simulated and owned
-    # by backend/sim/portal.py and opens only in the offseason window. It is not
+    # by the Simulator (backend/sim/portal.py), opens only in the offseason window,
+    # and flows to Dynasty+ through the save (dynasty["transfer_portal"]). It is not
     # hand-editable, the same way the national recruiting board is not.
 
     # ---- Rivals ----
@@ -168,7 +174,7 @@ SCHEMA: list[dict[str, Any]] = [
             _f("recruiting_pool", "Recruiting NIL pool", "money", width="half"),
             _f("roster_pool", "Roster NIL pool", "money", width="half"),
             _f("previous_coach", "Previous head coach", "text", width="half",
-               help="Who your coach replaced (optional). The season tool generates prior-season history; a first-year coach has Tenure = 1."),
+               help="Who your coach replaced (optional). The Simulator generates the program's prior-season history; a first-year coach has Tenure = 1."),
         ],
     },
     {
@@ -206,7 +212,7 @@ SCHEMA: list[dict[str, Any]] = [
             _f("jersey", "Jersey", "number", width="quarter"),
             _f("year", "Class", "select", width="quarter", options=YEAR_OPTS),
             _f("rating", "Overall", "number", width="quarter", min=40, max=99),
-            _f("depth_chart_slot", "Depth chart slot", "text", width="full", help='e.g. "Starting Quarterback" or "Backup Running Back".'),
+            _f("depth_chart_slot", "Depth chart slot", "text", width="full", help='e.g. "Starting Quarterback", "Backup Running Back". Shown on the phone contact list.'),
             _f("stat_line", "Stat line", "text", width="full"),
             _f("note", "Scouting note", "textarea", width="full"),
             _f("draft_stock", "Draft stock", "text", width="full", help="Leave blank for non-prospects."),
@@ -227,7 +233,7 @@ SCHEMA: list[dict[str, Any]] = [
             _f("name", "Name", "text", width="half"),
             _f("position", "Position", "text", width="quarter"),
             _f("stars", "Stars", "stars", width="quarter"),
-            _f("national_rank", "National rank", "number", width="quarter", help="Overall prospect ranking."),
+            _f("national_rank", "National rank", "number", width="quarter", help="Overall prospect ranking. Shown on the phone contact list."),
             _f("rating", "Rating", "rating", width="half", min=0, max=1, step=0.0001, help="247-style composite, 0 to 1."),
             _f("hometown", "Hometown", "text", width="half"),
             _f("stage", "Stage", "select", width="half", options=STAGE_OPTS),
@@ -246,8 +252,8 @@ SCHEMA: list[dict[str, Any]] = [
             _f("name", "Name", "text", width="half"),
             _f("position", "Position", "text", width="quarter"),
             _f("stars", "Stars", "stars", width="quarter"),
-            _f("national_rank", "National rank", "number", width="quarter", help="Overall prospect ranking."),
-            _f("our_board_rank", "Our board rank", "number", width="quarter", help="Where your program ranks on this recruit's board (1 = top choice)."),
+            _f("national_rank", "National rank", "number", width="quarter", help="Overall prospect ranking. Shown on the phone contact list."),
+            _f("our_board_rank", "Our board rank", "number", width="quarter", help="Where Nebraska ranks on this recruit's board (1 = top choice). Shown on the phone contact list."),
             _f("leader", "Leader", "team", width="half"),
             _f("predicted", "Predicted to", "team", width="half"),
             _f("stage", "Stage", "select", width="half", options=STAGE_OPTS),
@@ -269,10 +275,40 @@ PERSONA_SECTIONS: dict[str, tuple[str, str]] = {
 }
 
 
+def _migrate_from_combined() -> None:
+    """One-time: seed this store from the old combined customization.json, which
+    held game + media edits together before the split. Copies any game-section
+    edits across so a user's existing team/roster/rival customizations survive.
+    Non-destructive: leaves the old file alone (its stale game keys are ignored
+    by the trimmed media store)."""
+    if _STORE_FILE.exists():
+        return
+    old = config.DATA_DIR / "customization.json"
+    if not old.exists():
+        return
+    try:
+        with old.open("r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (OSError, ValueError):
+        return
+    if not isinstance(data, dict):
+        return
+    carried = {k: v for k, v in data.items() if k in DEFAULTS}
+    if not carried:
+        return
+    try:
+        with _STORE_FILE.open("w", encoding="utf-8") as fh:
+            json.dump(carried, fh, indent=2)
+    except OSError:
+        pass
+
+
+_migrate_from_combined()
+
 _store = Store(store_file=_STORE_FILE, defaults=DEFAULTS, schema=SCHEMA,
                persona_sections=PERSONA_SECTIONS)
 
-# Module-level API used by the tools backend and season adapter.
+# Module-level delegating API (kept stable for sim/adapter + the Simulator app).
 section = _store.section
 load = _store.load
 get_state = _store.get_state

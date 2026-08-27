@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 // Generic overlay. `align` controls placement ('center' | 'right'). Closes on
-// backdrop click and Escape.
+// backdrop click and Escape. The phone screen composes this with a PhoneFrame.
 export default function Modal({ open, onClose, align = 'center', className = '', children }) {
   useEffect(() => {
     if (!open) return undefined;

@@ -22,7 +22,7 @@ def assert_ok(response, label: str) -> None:
 
 
 def check_python_syntax() -> None:
-    paths = [ROOT / "run.py"]
+    paths = [ROOT / "run.py", ROOT / "run_sim.py"]
     for source_dir in ("backend", "simulator", "scripts"):
         paths.extend((ROOT / source_dir).rglob("*.py"))
     for path in sorted(paths):
@@ -33,20 +33,23 @@ def check_api() -> None:
     with tempfile.TemporaryDirectory(prefix="dynastyplus-smoke-") as temp_dir:
         data_dir = Path(temp_dir)
         shutil.copy2(ROOT / "data" / "league_seed.json", data_dir / "league_seed.json")
+        shutil.copy2(ROOT / "data" / "local_media.json", data_dir / "local_media.json")
         os.environ["CFBMOD_DATA_DIR"] = str(data_dir)
+        os.environ["CFBMOD_USE_LLM"] = "false"
+        os.environ["ANTHROPIC_API_KEY"] = ""
 
-        from simulator.app import create_app
+        from simulator.app import create_app as create_simulator_app
 
-        app = create_app()
-        app.config.update(TESTING=True)
+        simulator_app = create_simulator_app()
+        simulator_app.config.update(TESTING=True)
 
-        with app.test_client() as client:
+        with simulator_app.test_client() as client:
             for path in ("/", "/api/config", "/api/sim/state", "/api/customization"):
-                assert_ok(client.get(path), f"GET {path}")
+                assert_ok(client.get(path), f"Simulator GET {path}")
 
             assert_ok(
                 client.post("/api/sim/new", json={"year": 2031, "seed": 42}),
-                "POST /api/sim/new",
+                "Simulator POST /api/sim/new",
             )
 
             for path in (
@@ -54,16 +57,41 @@ def check_api() -> None:
                 "/api/budget?year=2031",
                 "/api/sim/recruits?year=2031",
             ):
-                assert_ok(client.get(path), f"GET {path}")
+                assert_ok(client.get(path), f"Simulator GET {path}")
 
             assert_ok(
                 client.post("/api/sim/simulate-game", json={"year": 2031}),
-                "POST /api/sim/simulate-game",
+                "Simulator POST /api/sim/simulate-game",
             )
             assert_ok(
                 client.post("/api/sim/advance", json={"year": 2031}),
-                "POST /api/sim/advance",
+                "Simulator POST /api/sim/advance",
             )
+
+        from backend.app import create_app as create_tools_app
+
+        tools_app = create_tools_app()
+        tools_app.config.update(TESTING=True)
+
+        with tools_app.test_client() as client:
+            for path in (
+                "/",
+                "/api/config",
+                "/api/schema",
+                "/api/llm",
+                "/api/state",
+                "/api/dynasties",
+                "/api/customization",
+            ):
+                assert_ok(client.get(path), f"Dynasty+ Tools GET {path}")
+
+            assert_ok(client.post("/api/scan"), "Dynasty+ Tools POST /api/scan")
+            response = client.get("/api/dynasties")
+            assert_ok(response, "Dynasty+ Tools GET /api/dynasties after scan")
+            if not response.get_json().get("dynasties"):
+                raise AssertionError("Dynasty+ Tools scan did not register the sample dynasty")
+
+            assert_ok(client.get("/api/dynasty"), "Dynasty+ Tools GET /api/dynasty")
 
 
 def main() -> None:

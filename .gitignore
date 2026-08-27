@@ -14,10 +14,33 @@ frontend/node_modules/
 frontend/dist/
 frontend/storybook-static/
 
-# Runtime data (written while Dynasty+ Tools runs, not source).
-# league_seed.json remains tracked as the shared FBS seed.
-data/*
-!data/league_seed.json
+# Runtime data (written while the app runs — not source)
+# Per-playthrough customization stores (the user's team/roster identity and media
+# flavor). league_seed.json and local_media.json stay tracked: those are shared
+# seeds, not playthrough state.
+data/customization.json
+data/customization_game.json
+data/teams_cache.json
+data/dynasties.json
+data/save/
+data/sim/
+data/budget/
+data/app_state.json
+data/llm.json
+data/llm_stats.json
+data/uploads/
+# All per-dynasty companion stores (cache, narrative, interviews, messages, feed,
+# world reactions, archive) now live scoped under data/dynasties/<dynasty_id>/.
+data/dynasties/
+# Legacy top-level companion stores, superseded by data/dynasties/ but kept
+# ignored in case an older save left data behind.
+data/cache/
+data/narrative/
+data/dynasty_archive/
+data/feed/
+data/interviews/
+data/messages/
+data/world/
 
 # Local data backups (created before a data wipe)
 data-backup-*

@@ -10,6 +10,6 @@ export default {
 export const Default = {
   render: () => {
     const [v, setV] = useState('');
-    return <div style={{ maxWidth: 360 }}><TextInput placeholder="Search recruits" value={v} onValueChange={setV} /></div>;
+    return <div style={{ maxWidth: 360 }}><TextInput placeholder="http://127.0.0.1:8787" value={v} onValueChange={setV} /></div>;
   },
 };
