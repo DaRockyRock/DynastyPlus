@@ -35,8 +35,6 @@ def check_api() -> None:
         shutil.copy2(ROOT / "data" / "league_seed.json", data_dir / "league_seed.json")
         shutil.copy2(ROOT / "data" / "local_media.json", data_dir / "local_media.json")
         os.environ["CFBMOD_DATA_DIR"] = str(data_dir)
-        os.environ["CFBMOD_USE_LLM"] = "false"
-        os.environ["ANTHROPIC_API_KEY"] = ""
 
         from simulator.app import create_app as create_simulator_app
 
@@ -74,16 +72,28 @@ def check_api() -> None:
         tools_app.config.update(TESTING=True)
 
         with tools_app.test_client() as client:
+            config_response = client.get("/api/config")
+            assert_ok(config_response, "Dynasty+ Tools GET /api/config")
+            public_config = config_response.get_json()
+            forbidden_config = {
+                "model", "provider", "base_url", "use_llm", "llm_enabled",
+                "llm_configured", "has_api_key",
+            }
+            leaked_config = forbidden_config.intersection(public_config)
+            if leaked_config:
+                raise AssertionError(f"Experience model settings leaked through /api/config: {sorted(leaked_config)}")
+
             for path in (
                 "/",
-                "/api/config",
                 "/api/schema",
-                "/api/llm",
                 "/api/state",
                 "/api/dynasties",
                 "/api/customization",
             ):
                 assert_ok(client.get(path), f"Dynasty+ Tools GET {path}")
+
+            if client.get("/api/llm").status_code != 404:
+                raise AssertionError("Experience model-connection API is still exposed")
 
             assert_ok(client.post("/api/scan"), "Dynasty+ Tools POST /api/scan")
             response = client.get("/api/dynasties")

@@ -37,7 +37,6 @@ export { default as StageTag } from './ui/StageTag.jsx';
 export { default as DealbreakerTag } from './ui/DealbreakerTag.jsx';
 export { default as FormField } from './ui/FormField.jsx';
 export { default as TextInput } from './ui/TextInput.jsx';
-export { default as PasswordInput } from './ui/PasswordInput.jsx';
 export { default as Select } from './ui/Select.jsx';
 export { default as CodeSnippet } from './ui/CodeSnippet.jsx';
 export { default as Callout } from './ui/Callout.jsx';
@@ -126,22 +125,10 @@ export { default as WeekNav } from './layout/WeekNav.jsx';
 export { default as LiveStatus } from './layout/LiveStatus.jsx';
 export { default as LoadingOverlay } from './layout/LoadingOverlay.jsx';
 export { default as SettingsFab } from './layout/SettingsFab.jsx';
-export { default as LLMStatusPill } from './layout/LLMStatusPill.jsx';
 export { default as SimStatusBadge } from './layout/SimStatusBadge.jsx';
 export { default as SimTopBar } from './layout/SimTopBar.jsx';
 export { default as PendingActionsBadge } from './layout/PendingActionsBadge.jsx';
 export { default as PhoneButton } from './layout/PhoneButton.jsx';
-
-// --- Onboarding / LLM setup ---
-export { default as OnboardingHeader } from './onboarding/OnboardingHeader.jsx';
-export { default as WelcomeIntro } from './onboarding/WelcomeIntro.jsx';
-export { default as ProviderCard } from './onboarding/ProviderCard.jsx';
-export { default as ProviderPicker } from './onboarding/ProviderPicker.jsx';
-export { default as ConnectionForm } from './onboarding/ConnectionForm.jsx';
-export { default as GuideStep } from './onboarding/GuideStep.jsx';
-export { default as SetupGuide } from './onboarding/SetupGuide.jsx';
-export { default as ConnectionTester } from './onboarding/ConnectionTester.jsx';
-export { default as OnboardingFooter } from './onboarding/OnboardingFooter.jsx';
 
 // --- Settings / Customize studio ---
 export { default as SettingsIcon } from './settings/SettingsIcon.jsx';

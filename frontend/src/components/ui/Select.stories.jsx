@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import Select from './Select.jsx';
 
-const MODELS = [
-  { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 - fastest, cheapest' },
-  { value: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6 - balanced' },
-  { value: 'claude-opus-4-8', label: 'Claude Opus 4.8 - most capable' },
+const SEASONS = [
+  { value: '2026', label: '2026 season' },
+  { value: '2027', label: '2027 season' },
+  { value: '2028', label: '2028 season' },
 ];
 
 export default {
@@ -13,9 +13,9 @@ export default {
   parameters: { layout: 'padded' },
 };
 
-export const Models = {
+export const Seasons = {
   render: () => {
-    const [v, setV] = useState('claude-haiku-4-5');
-    return <div style={{ maxWidth: 360 }}><Select options={MODELS} value={v} onValueChange={setV} /></div>;
+    const [v, setV] = useState('2026');
+    return <div style={{ maxWidth: 360 }}><Select options={SEASONS} value={v} onValueChange={setV} /></div>;
   },
 };

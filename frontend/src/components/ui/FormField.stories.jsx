@@ -9,8 +9,8 @@ export default {
 export const Text = {
   render: () => (
     <div className="set-grid">
-      <FormField label="Anthropic API key" help="Starts with sk-ant-. Stored locally, never shared.">
-        <input className="set-input" placeholder="sk-ant-..." />
+      <FormField label="Dynasty save" help="Choose the save file to inspect.">
+        <input className="set-input" placeholder="dynasty.json" />
       </FormField>
     </div>
   ),
@@ -19,11 +19,11 @@ export const Text = {
 export const TwoUp = {
   render: () => (
     <div className="set-grid">
-      <FormField label="Base URL" width="half" help="Your local server.">
-        <input className="set-input" placeholder="http://127.0.0.1:8787" />
+      <FormField label="Season" width="half" help="The season represented by the save.">
+        <input className="set-input" placeholder="2026" />
       </FormField>
-      <FormField label="Model" width="half">
-        <input className="set-input" placeholder="claude-haiku-4-5" />
+      <FormField label="Week" width="half">
+        <input className="set-input" placeholder="10" />
       </FormField>
     </div>
   ),

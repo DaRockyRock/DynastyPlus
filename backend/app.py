@@ -11,7 +11,7 @@ import hashlib
 from flask import Flask, jsonify, request, send_from_directory
 from werkzeug.utils import secure_filename
 
-from . import budget, cache, config, conferences, customization, directory, dynasties, feed_state, inbox, interview, llm, llm_settings, messages, pipeline, schema, teams, world, world_events
+from . import budget, cache, config, conferences, customization, directory, dynasties, feed_state, inbox, interview, messages, pipeline, schema, teams, world, world_events
 from .modules import REGISTRY, phone, article_detail
 from .modules import base as module_base
 from .watcher import SaveWatcher
@@ -87,41 +87,6 @@ def api_schema():
     return jsonify({"description": schema.SCHEMA_DESCRIPTION, "required": schema.REQUIRED_PATHS})
 
 
-# --- LLM connection (the setup wizard) ------------------------------------
-@app.get("/api/llm")
-def api_llm():
-    """Current connection status. Never includes the API key itself."""
-    return jsonify(llm_settings.status())
-
-
-@app.put("/api/llm")
-def api_llm_set():
-    """Save the connection from the setup wizard. Clears the per-week cache so
-    content regenerates with the new model."""
-    body = request.get_json(silent=True) or {}
-    try:
-        return jsonify(llm_settings.save(body))
-    except ValueError as exc:
-        return jsonify({"error": str(exc)}), 400
-
-
-@app.post("/api/llm/test")
-def api_llm_test():
-    """Live-test a candidate connection without saving it. If the api key is
-    omitted, fall back to the one already saved for that provider so an existing
-    connection can be re-tested without resending the secret."""
-    body = request.get_json(silent=True) or {}
-    provider = (body.get("provider") or llm_settings.provider()).strip().lower()
-    api_key = (body.get("api_key") or "").strip() or llm_settings.saved_api_key(provider)
-    result = llm.probe(
-        provider=provider,
-        model=body.get("model") or "",
-        api_key=api_key,
-        base_url=body.get("base_url") or "",
-    )
-    return jsonify(result)
-
-
 @app.get("/api/teams")
 def api_teams():
     refresh = request.args.get("refresh") == "1"
@@ -174,7 +139,7 @@ def api_customization_generate_person(section: str):
     body = request.get_json(silent=True) or {}
     seed = body.get("seed") or {}
     try:
-        result = customization.generate_person(section, seed, use_llm=llm_settings.use_llm())
+        result = customization.generate_person(section, seed, use_llm=False)
     except KeyError as exc:
         return jsonify({"error": str(exc)}), 404
     return jsonify(result)
@@ -328,7 +293,7 @@ def api_article():
     year = int(body.get("year", ptr["year"]))
     week = int(body.get("week", ptr["week"]))
     dynasty = pipeline.load_dynasty(year, week)
-    detail = article_detail.expand(article, dynasty, year=year, week=week, use_llm=llm_settings.use_llm())
+    detail = article_detail.expand(article, dynasty, year=year, week=week, use_llm=False)
     return jsonify(detail)
 
 
@@ -349,7 +314,7 @@ def api_phone_message():
     year, week = _yw()
     dynasty = pipeline.load_dynasty(year, week)
     res = phone.reply(contact_id, message, dynasty, year=year, week=week,
-                      use_llm=llm_settings.use_llm(), action=action)
+                      use_llm=False, action=action)
     if res.get("error"):
         return jsonify(res), 404
     # The world hears what the coach says. The reaction engine judges the message
@@ -370,7 +335,7 @@ def api_phone_message():
         except Exception:
             pass
         world.react_async(contact_full, message, dynasty, year=year, week=week,
-                          channel=channel, use_llm=llm_settings.use_llm())
+                          channel=channel, use_llm=False)
         res["world"] = {"reacting": True}
     return jsonify(res)
 
@@ -458,7 +423,7 @@ def _presser_hits_the_world(year: int, week: int, game_key: str, dynasty: dict) 
         # threat, an injury or a bombshell) breaks on the feed. A routine presser
         # passes quietly, it still feeds the news + presser-aware texts.
         world.react_async(None, statement, dynasty, year=year, week=week, channel="Press conference",
-                          use_llm=llm_settings.use_llm(), inbound=False, min_tier=2)
+                          use_llm=False, inbound=False, min_tier=2)
 
 
 @app.get("/api/interview/pending")
@@ -474,7 +439,7 @@ def api_interview_start():
     """Begin (or resume) the presser: returns the reporters and the first question."""
     year, week = _yw()
     dynasty = pipeline.load_dynasty(year, week)
-    res = interview.start(year, week, dynasty, use_llm=llm_settings.use_llm())
+    res = interview.start(year, week, dynasty, use_llm=False)
     if res is None:
         return jsonify({"error": "no completed game to interview about"}), 404
     return jsonify(res)
@@ -489,7 +454,7 @@ def api_interview_answer():
     text = body.get("answer", "")
     year, week = _yw()
     dynasty = pipeline.load_dynasty(year, week)
-    res = interview.answer(year, week, game_key, dynasty, text, use_llm=llm_settings.use_llm())
+    res = interview.answer(year, week, game_key, dynasty, text, use_llm=False)
     if res is None:
         return jsonify({"error": "no active presser for that game"}), 404
     if res.get("status") == "complete":
@@ -509,7 +474,7 @@ def api_interview_skip():
     game_key = body.get("game_key", "")
     year, week = _yw()
     dynasty = pipeline.load_dynasty(year, week)
-    res = interview.skip(year, week, game_key, dynasty, use_llm=llm_settings.use_llm())
+    res = interview.skip(year, week, game_key, dynasty, use_llm=False)
     if res is None:
         return jsonify({"error": "no active presser for that game"}), 404
     if res.get("status") == "complete":
@@ -605,6 +570,12 @@ def api_watcher_start():
 def api_watcher_stop():
     _watcher.stop()
     return jsonify({"stopped": True, "info": _watcher.info()})
+
+
+@app.route("/api/<path:_unknown>", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
+def api_not_found(_unknown: str):
+    """Unknown API paths must never fall through to the frontend SPA."""
+    return jsonify({"error": "unknown API endpoint"}), 404
 
 
 def create_app() -> Flask:

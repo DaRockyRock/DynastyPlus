@@ -1,7 +1,7 @@
-// Indicates whether a module's content came from the LLM, mock data, or is
-// static. Mirrors the `source` field returned by every generation module.
+// Indicates whether a Tools view uses local sample data or static data.
 export default function SourcePill({ source }) {
   const s = (source || 'mock').toLowerCase();
-  const label = s === 'llm' ? 'LLM' : s === 'static' ? 'STATIC' : 'MOCK';
-  return <span className={`source-pill ${s}`}>{label}</span>;
+  const normalized = s === 'static' ? 'static' : 'mock';
+  const label = normalized === 'static' ? 'STATIC' : 'LOCAL';
+  return <span className={`source-pill ${normalized}`}>{label}</span>;
 }

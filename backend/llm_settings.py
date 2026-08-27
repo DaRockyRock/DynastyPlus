@@ -172,8 +172,8 @@ def is_ready() -> bool:
 
 
 def use_llm() -> bool:
-    """The flag threaded to every module (gates the LLM path vs mock)."""
-    return is_ready()
+    """Dynasty+ Tools never sends data to an external or local AI model."""
+    return False
 
 
 def is_configured() -> bool:

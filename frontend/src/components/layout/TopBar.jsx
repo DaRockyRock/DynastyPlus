@@ -4,7 +4,6 @@ import Badge from '../ui/Badge.jsx';
 import Button from '../ui/Button.jsx';
 import WeekNav from './WeekNav.jsx';
 import LiveStatus from './LiveStatus.jsx';
-import LLMStatusPill from './LLMStatusPill.jsx';
 import SimStatusBadge from './SimStatusBadge.jsx';
 import PendingActionsBadge from './PendingActionsBadge.jsx';
 import PhoneButton from './PhoneButton.jsx';
@@ -19,7 +18,7 @@ import { hexColor } from '../../lib/format.js';
 //   demo           - manual WeekNav stepper + Advance Week button (UI testing).
 export default function TopBar({
   team, season, week, mode = 'live', watcherActive = false, sim = null, onSimClick,
-  onPrevWeek, onAdvance, onSync, onPhone, phoneUnread = 0, llm, onLLMClick,
+  onPrevWeek, onAdvance, onSync, onPhone, phoneUnread = 0,
   pending = 0, onPendingClick, onScan, scanning = false, onExit,
 }) {
   const cfp = team.rankings?.cfp ? `#${team.rankings.cfp}` : 'NR';
@@ -47,7 +46,6 @@ export default function TopBar({
       <div className="topbar-spacer" />
       <div className="topbar-actions">
         {sim?.active && <SimStatusBadge week={sim.week} onClick={onSimClick} />}
-        {onLLMClick && <LLMStatusPill status={llm} onClick={onLLMClick} />}
         {mode === 'demo' ? (
           <>
             <WeekNav week={week} onPrev={onPrevWeek} onNext={onAdvance} />

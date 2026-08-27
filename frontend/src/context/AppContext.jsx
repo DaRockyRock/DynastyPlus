@@ -23,10 +23,6 @@ export function AppProvider({ children }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [article, setArticle] = useState(null);
   const [ready, setReady] = useState(false);
-  // LLM connection status (from /api/llm) and the first-run setup gate. The
-  // wizard opens automatically until a connection has been saved (configured).
-  const [llm, setLlm] = useState(null);
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
   // Phone contacts + conversation threads live here (not in PhoneApp) so an NIL
   // offer made anywhere can drop a text into the right recruit's chat.
   const [phoneContacts, setPhoneContacts] = useState([]);
@@ -98,15 +94,14 @@ export function AppProvider({ children }) {
     catch { return null; }
   }, []);
 
-  // boot: load config + LLM status + the dynasty library. Do NOT load a dynasty;
+  // Boot into the dynasty library. Do not load a dynasty until the user scans
+  // and selects one.
   // the app opens to the library and waits for the coach to Scan + Continue.
   useEffect(() => {
     (async () => {
       try {
-        const [cfg, llmStatus, lib] = await Promise.all([api.config(), api.llm(), api.dynasties()]);
+        const [cfg, lib] = await Promise.all([api.config(), api.dynasties()]);
         setConfig(cfg);
-        setLlm(llmStatus);
-        setOnboardingOpen(!llmStatus.configured);
         if (lib) setDynastyLib(lib);
       } catch (e) {
         toast('Failed to connect to backend: ' + e.message);
@@ -274,23 +269,6 @@ export function AppProvider({ children }) {
     reloadKey.current += 1;
     setTick((t) => t + 1);
   }, [loadDynasty, pointer]);
-
-  // LLM setup wizard. Opening is non-destructive; saving a connection clears the
-  // backend's per-week cache, so we force every page to refetch afterwards.
-  const openOnboarding = useCallback(() => setOnboardingOpen(true), []);
-  const closeOnboarding = useCallback(() => setOnboardingOpen(false), []);
-  const reloadLLM = useCallback(async () => {
-    try { setLlm(await api.llm()); } catch { /* keep last-known */ }
-  }, []);
-  const testLLM = useCallback((patch) => api.testLLM(patch), []);
-  const saveLLM = useCallback(async (patch) => {
-    const status = await api.saveLLM(patch);
-    setLlm(status);
-    try { setConfig(await api.config()); } catch { /* ignore */ }
-    reloadKey.current += 1;
-    setTick((t) => t + 1);
-    return status;
-  }, []);
 
   const goToWeek = useCallback(async (week) => {
     if (week < 1) return;
@@ -549,8 +527,6 @@ export function AppProvider({ children }) {
     dynastyLib, enteredDynasty, scanning, refreshDynasties, scan, selectDynasty, exitDynasty,
     phoneOpen, openPhone: () => setPhoneOpen(true), closePhone: () => setPhoneOpen(false),
     settingsOpen, openSettings, closeSettings,
-    llm, llmReady: !!llm?.ready,
-    onboardingOpen, openOnboarding, closeOnboarding, saveLLM, testLLM, reloadLLM,
     phoneContacts, phoneCategories, phoneThreads, appendThread, contactForName,
     unreadByContact, unreadTotal, markThreadRead,
     // social feed (the phone's second app)

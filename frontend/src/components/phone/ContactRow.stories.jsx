@@ -60,7 +60,7 @@ export const WithUnread = {
   ),
 };
 
-// While a contact composes a reply (LLM generating), the row shows a live typing
+// While a contact composes a reply, the row shows a live typing
 // indicator even after the coach leaves the conversation.
 export const Typing = {
   render: () => (

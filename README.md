@@ -32,22 +32,14 @@ To create a sample save locally, run `python run_sim.py` in another terminal,
 open `http://127.0.0.1:5070`, and start a season. Return to Dynasty+ Tools and
 click **Scan**. The two apps communicate only through files in `data/save/`.
 
-With no API key, Dynasty+ Tools runs entirely on mock generated content, which
-is useful for local development without incurring model costs.
-
 ## Configuration
 
 Copy `.env.example` to `.env` and edit:
 
 | Variable | Purpose |
 | --- | --- |
-| `ANTHROPIC_API_KEY` | Your Anthropic key. Leave blank for mock-only mode. |
-| `CFBMOD_MODEL` | Generation model. Default `claude-haiku-4-5`. |
-| `CFBMOD_USE_LLM` | `true` to call the API, `false` (default) for mock content. |
 | `CFBMOD_SAVE_PATH` | Save file to watch. Today this can be a JSON file shaped like the dynasty schema. |
 | `CFBMOD_HOST` / `CFBMOD_PORT` | Local server bind address. |
-
-Live generation requires both `CFBMOD_USE_LLM=true` and a key.
 
 ## How it works
 
@@ -69,11 +61,8 @@ Simulator (run_sim.py)                         Dynasty+ companion (run.py)
   offers from the phone, recruiting actions) are queued to the companion inbox
   (`backend/inbox.py`); the Simulator drains and applies them through the budget
   engine before each week's recruiting cycle, then rewrites the save.
-- **Generation modules** (`backend/modules/`) - each is independently callable
-  and returns JSON. Top stories and the news feed are fully built; the rest
-  (CFP committee, recruiting, portal, hot seat, awards, archive, phone) ship as
-  rich scaffolds with LLM prompts wired in and mock fallbacks so every tab is
-  populated.
+- **Data modules** (`backend/modules/`) - each is independently callable and
+  returns JSON for the corresponding Tools view.
 - **Narrative memory** (`backend/narrative.py`) - a persistent per-season
   document that grows each week and is injected into every prompt, so a Week 4
   rumor can resurface in the offseason and committee members stay consistent.
@@ -121,7 +110,6 @@ backend/
   schema.py            dynasty JSON schema
   mock_data.py         Nebraska mock dynasty generator
   teams.py             ESPN-backed team metadata
-  llm.py               Anthropic wrapper (prompt caching, JSON parsing)
   narrative.py         persistent narrative memory
   cache.py             per-week content cache
   pipeline.py          orchestration + runtime state

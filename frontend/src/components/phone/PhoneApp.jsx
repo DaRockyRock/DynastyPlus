@@ -25,7 +25,7 @@ export default function PhoneApp() {
   const [tab, setTab] = useState('All');
   // Which of the phone's two apps is showing (the bottom nav switches it).
   const [app, setApp] = useState('messages');
-  // Which contacts are currently composing a reply (LLM generating + streaming).
+  // Which contacts are currently composing a reply.
   // Keyed by contact id so the typing indicator follows the conversation into the
   // list, and survives the coach leaving the chat or closing the phone.
   const [pending, setPending] = useState({});

@@ -13,7 +13,6 @@ import HotSeatPage from './pages/HotSeatPage.jsx';
 import AwardsPage from './pages/AwardsPage.jsx';
 import ArchivePage from './pages/ArchivePage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
-import OnboardingPage from './pages/OnboardingPage.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 
 const TABS = [
@@ -30,7 +29,7 @@ const TABS = [
 ];
 
 function Shell() {
-  const { dynasty, ready, enteredDynasty, pointer, mode, watcherActive, loading, toastMsg, openPhone, unreadTotal, scanNow, scanning, exitDynasty, article, closeArticle, settingsOpen, openSettings, onboardingOpen, openOnboarding, llm, pendingActions, activeTab, setActiveTab, presser, submitInterviewAnswer, skipInterview, closePresser } = useApp();
+  const { dynasty, ready, enteredDynasty, pointer, mode, watcherActive, loading, toastMsg, openPhone, unreadTotal, scanNow, scanning, exitDynasty, article, closeArticle, settingsOpen, openSettings, pendingActions, activeTab, setActiveTab, presser, submitInterviewAnswer, skipInterview, closePresser } = useApp();
   const active = activeTab;
   const setActive = setActiveTab;
   const [presserBusy, setPresserBusy] = useState(false);
@@ -39,11 +38,6 @@ function Shell() {
 
   if (!ready) {
     return <div className="view"><div className="empty-state">Loading Dynasty+ Tools...</div></div>;
-  }
-
-  // First-run / re-entry LLM setup takes over the whole screen.
-  if (onboardingOpen) {
-    return <OnboardingPage />;
   }
 
   // Until a dynasty is entered (Scan + Continue), show the dynasty library.
@@ -90,8 +84,6 @@ function Shell() {
         phoneUnread={unreadTotal}
         pending={pendingActions}
         onPendingClick={openPhone}
-        llm={llm}
-        onLLMClick={openOnboarding}
       />
       <NavTabs
         tabs={tabs}

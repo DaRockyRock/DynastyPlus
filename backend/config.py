@@ -149,21 +149,9 @@ WEEKLY_RECRUITING_HOURS = int(os.getenv("CFBMOD_WEEKLY_HOURS", "1500"))
 
 
 def runtime_summary() -> dict:
-    """Small dict describing how the backend is configured, for the UI. The LLM
-    fields come from the live llm_settings store (not the .env seed) so the UI
-    reflects whatever the user set up in the wizard."""
-    from . import llm_settings  # lazy: llm_settings imports config
-
-    st = llm_settings.status()
+    """Small, non-sensitive snapshot of the Tools runtime configuration."""
     return {
         "version": APP_VERSION,
-        "model": st["model"],
-        "provider": st["provider"],
-        "base_url": st["base_url"],
-        "use_llm": st["ready"],
-        "llm_enabled": st["enabled"],
-        "llm_configured": st["configured"],
-        "has_api_key": st["anthropic"]["has_api_key"] or st["local"]["has_api_key"],
         "data_dir": str(DATA_DIR),
         "save_path": SAVE_PATH or None,
         "watching": bool(SAVE_PATH),

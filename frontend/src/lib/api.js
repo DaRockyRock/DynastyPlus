@@ -47,11 +47,6 @@ function qs(year, week, regenerate) {
 export const api = {
   config: () => getJSON('/api/config'),
 
-  // LLM connection (the setup wizard). The key is never returned by the backend.
-  llm: () => getJSON('/api/llm'),
-  saveLLM: (body) => putJSON('/api/llm', body),
-  testLLM: (body) => postJSON('/api/llm/test', body),
-
   teams: () => getJSON('/api/teams'),
   state: () => getJSON('/api/state'),
 

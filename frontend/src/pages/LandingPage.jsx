@@ -1,13 +1,13 @@
 import { useApp } from '../context/AppContext.jsx';
 import {
-  PageHeader, Button, EmptyState, DynastyCard, SectionTitle, Icons, LLMStatusPill,
+  PageHeader, Button, EmptyState, DynastyCard, SectionTitle, Icons,
 } from '../components/index.js';
 
 // The companion's landing screen: a library of dynasties scanned from the
 // Simulator. The app is passive here, nothing generates. The coach creates a
 // dynasty in the Simulator, clicks Scan to import it, then Continue to enter.
 export default function LandingPage() {
-  const { dynastyLib, scanning, scan, selectDynasty, llm, openOnboarding } = useApp();
+  const { dynastyLib, scanning, scan, selectDynasty } = useApp();
   const list = dynastyLib?.dynasties || [];
   // A new/updated save is sitting in the Simulator drop spot, not yet imported
   // (a brand-new program, or a newer week/state than what we last scanned).
@@ -53,29 +53,6 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* LLM connection: set/change the model that writes your dynasty's media
-          before entering a save. */}
-      <div
-        style={{
-          marginTop: 36, paddingTop: 18,
-          borderTop: '1px solid var(--border, rgba(255,255,255,0.08))',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 12, flexWrap: 'wrap',
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{
-            font: '700 13px "Saira Condensed", sans-serif', letterSpacing: '0.06em',
-            textTransform: 'uppercase', color: 'var(--text-1, #e9eef5)',
-          }}>
-            Generation model
-          </span>
-          <span style={{ fontSize: 12.5, color: 'var(--text-2, #9aa6b2)' }}>
-            The AI that writes your dynasty's media. Change it before you enter a save.
-          </span>
-        </div>
-        <LLMStatusPill status={llm} onClick={openOnboarding} />
-      </div>
     </div>
   );
 }

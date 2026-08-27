@@ -9,8 +9,8 @@ export default {
 export const Info = {
   render: () => (
     <div style={{ maxWidth: 520 }}>
-      <Callout tone="info" title="Runs on mock content until connected">
-        Every section works without a model. Connect one to generate live, persistent media.
+      <Callout tone="info" title="No save loaded">
+        Scan a dynasty save to populate every available Tools view.
       </Callout>
     </div>
   ),
@@ -19,8 +19,8 @@ export const Info = {
 export const Warn = {
   render: () => (
     <div style={{ maxWidth: 520 }}>
-      <Callout tone="warn" title="Key stays on this machine">
-        Your API key is saved locally in data/llm.json and is never sent anywhere but Anthropic.
+      <Callout tone="warn" title="Save not found">
+        Check the configured save path, then scan again.
       </Callout>
     </div>
   ),
@@ -29,7 +29,7 @@ export const Warn = {
 export const Success = {
   render: () => (
     <div style={{ maxWidth: 520 }}>
-      <Callout tone="success" title="Connected">Generating with Claude Haiku 4.5.</Callout>
+      <Callout tone="success" title="Save imported">The dynasty is ready to inspect.</Callout>
     </div>
   ),
 };
