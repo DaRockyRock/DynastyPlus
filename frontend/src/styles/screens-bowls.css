@@ -1,0 +1,143 @@
+/* ============================================================
+   Bowl Games, postseason assignment studio
+   ============================================================ */
+.bowl-games-editor { max-width: var(--maxw); margin: 0 auto; padding: 24px 28px 72px; }
+
+.bge-hero {
+  position: relative; overflow: hidden; margin-bottom: 24px; padding: 30px 32px 20px;
+  border: 1px solid rgba(255,255,255,.13); border-radius: 8px;
+  background:
+    radial-gradient(680px 260px at 95% -20%, color-mix(in srgb, var(--team) 38%, transparent), transparent 72%),
+    linear-gradient(135deg, rgba(26,29,31,.97), rgba(10,12,13,.94));
+  box-shadow: 0 26px 60px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.bge-hero::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+  background: linear-gradient(90deg, var(--team), var(--team-alt), transparent 76%);
+}
+.bge-kicker {
+  margin-bottom: 4px; font-family: var(--font-display); font-size: 12px; font-weight: 800;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--team-alt);
+}
+.bge-title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.bge-title-row h1 {
+  margin: 0; font-family: var(--font-hero); font-size: clamp(48px, 6vw, 76px);
+  font-weight: 900; font-style: italic; line-height: .9; letter-spacing: -.025em;
+  text-transform: uppercase; color: var(--chalk);
+}
+.bge-title-row p { max-width: 680px; margin: 12px 0 0; color: var(--chalk-2); font-size: 14px; }
+.bge-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+.bge-summary {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; margin-top: 24px;
+  padding-top: 16px; border-top: 1px solid rgba(255,255,255,.09);
+  font-family: var(--font-display); font-size: 12px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--chalk-3);
+}
+.bge-summary strong { margin-right: 4px; color: var(--chalk); font-size: 15px; }
+.bge-sync { margin-left: auto; padding: 6px 9px; border: 1px solid rgba(255,255,255,.12); border-radius: 3px; color: var(--accent-gold); }
+.bge-sync.ready { border-color: color-mix(in srgb, var(--win) 42%, transparent); color: var(--win); }
+
+.bge-section { margin-top: 28px; }
+.bge-section > header {
+  display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; padding: 0 2px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.bge-section > header span {
+  font-family: var(--font-hero); font-size: 30px; font-weight: 900; font-style: italic;
+  line-height: 1; letter-spacing: .01em; text-transform: uppercase;
+}
+.bge-section > header small {
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--chalk-3);
+}
+.bge-marquee > header span { color: var(--cream); }
+.bge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 410px), 1fr)); gap: 16px; }
+.bge-grid.marquee { grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+
+.bowl-game-card {
+  --card-accent: color-mix(in srgb, var(--team) 70%, #fff);
+  position: relative; overflow: hidden; min-width: 0; padding: 0 20px 20px;
+  border: 1px solid rgba(255,255,255,.12); border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.035), transparent 28%),
+    linear-gradient(145deg, rgba(24,27,29,.98), rgba(10,12,13,.96));
+  box-shadow: 0 16px 38px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.035);
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.bowl-game-card::before {
+  content: ''; position: absolute; inset: 0 0 auto; height: 2px;
+  background: linear-gradient(90deg, var(--card-accent), transparent 78%);
+}
+.bowl-game-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.21); box-shadow: 0 21px 48px rgba(0,0,0,.46); }
+.bowl-game-card.ny6 {
+  --card-accent: var(--accent-gold);
+  background:
+    radial-gradient(460px 180px at 50% -50px, rgba(238,200,79,.14), transparent 70%),
+    linear-gradient(145deg, rgba(28,28,25,.99), rgba(10,12,13,.97));
+  border-color: rgba(238,200,79,.25);
+}
+.bowl-game-card.dirty { border-color: color-mix(in srgb, var(--team-alt) 52%, rgba(255,255,255,.15)); }
+.bowl-game-card.locked { opacity: .88; }
+
+.bgc-head {
+  display: flex; align-items: center; justify-content: space-between; height: 38px;
+  margin: 0 -20px; padding: 0 16px 0 20px; border-bottom: 1px solid rgba(255,255,255,.07);
+  background: rgba(0,0,0,.2);
+}
+.bgc-tier, .bgc-state {
+  font-family: var(--font-display); font-size: 10px; font-weight: 800;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--chalk-3);
+}
+.bgc-state { padding: 4px 7px; border: 1px solid rgba(255,255,255,.1); border-radius: 3px; }
+.bgc-state.changed { color: var(--accent-gold); border-color: rgba(238,200,79,.35); }
+.ny6 .bgc-tier { color: var(--accent-gold); }
+
+.bgc-brand {
+  display: grid; grid-template-columns: 116px minmax(0, 1fr); align-items: center;
+  min-height: 124px; gap: 14px; padding: 12px 2px 8px;
+}
+.bowl-logo { width: var(--bowl-logo-size); height: var(--bowl-logo-size); object-fit: contain; justify-self: center; filter: drop-shadow(0 7px 14px rgba(0,0,0,.45)); }
+.bowl-logo-fallback {
+  display: flex; width: var(--bowl-logo-size); height: var(--bowl-logo-size); flex-direction: column;
+  align-items: center; justify-content: center; justify-self: center; gap: 3px; padding: 9px;
+  border: 1px solid rgba(255,255,255,.18); border-radius: 50%; text-align: center;
+  background: radial-gradient(circle, rgba(255,255,255,.12), rgba(0,0,0,.22));
+}
+.bowl-logo-fallback strong { font-family: var(--font-display); font-size: 12px; line-height: 1.05; text-transform: uppercase; }
+.bowl-logo-fallback small { font-family: var(--font-display); font-size: 8px; letter-spacing: .15em; color: var(--chalk-3); }
+.bgc-title h3 {
+  margin: 0; font-family: var(--font-hero); font-size: 30px; font-weight: 900;
+  font-style: italic; line-height: .95; text-transform: uppercase;
+}
+.bgc-title p { margin: 8px 0 0; font-family: var(--font-display); font-size: 11px; line-height: 1.35; color: var(--chalk-3); }
+
+.bgc-matchup {
+  position: relative; min-height: 160px; padding: 10px 4px 6px; border-top: 1px solid rgba(255,255,255,.07);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  background: radial-gradient(300px 100px at 50% 40%, rgba(255,255,255,.055), transparent 72%);
+}
+.bgc-matchup .helmet-matchup { width: 100%; }
+.bgc-matchup .hm-side { width: min(40%, 176px); }
+.bgc-matchup .hm-name { max-width: 100%; }
+.bgc-matchup .hm-at { margin-top: 34px; border-color: rgba(255,255,255,.16); background: #111416; }
+
+.bgc-pickers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 14px; }
+.bowl-team-picker { display: block; min-width: 0; }
+.btp-label {
+  display: block; margin-bottom: 5px; font-family: var(--font-display); font-size: 9px;
+  font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--chalk-3);
+}
+.btp-control { display: grid; grid-template-columns: 34px minmax(0,1fr); align-items: center; gap: 7px; }
+.btp-control .logo-plate, .btp-control .team-mono { flex-shrink: 0; }
+.btp-control .set-select { width: 100%; min-width: 0; height: 38px; padding-left: 9px; font-size: 11px; }
+.bowl-game-card.locked .bgc-pickers { opacity: .58; }
+
+@media (max-width: 760px) {
+  .bowl-games-editor { padding: 16px 14px 64px; }
+  .bge-hero { padding: 24px 20px 18px; }
+  .bge-title-row { align-items: flex-start; flex-direction: column; }
+  .bge-actions { justify-content: flex-start; }
+  .bge-sync { width: 100%; margin: 4px 0 0; }
+  .bgc-brand { grid-template-columns: 98px minmax(0, 1fr); }
+  .bgc-pickers { grid-template-columns: 1fr; }
+}

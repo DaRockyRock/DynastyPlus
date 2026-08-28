@@ -1,0 +1,4 @@
+# Extra tooling needed only to build the distributable desktop apps
+# (scripts/build_app.py). Runtime deps are in requirements.txt; Node/npm handle
+# the Electron shell (electron, electron-builder) via electron/package.json.
+pyinstaller>=6.0.0

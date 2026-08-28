@@ -1,0 +1,356 @@
+/* Page styles: screens-conferences (see docs/cfb27-ui.md). Owned by the
+   Conference Setup editor; prefix every class .cs-. Do not add shared classes
+   here. */
+
+/* =========================================================================
+   Conference identity card (.cs-identity)
+   ========================================================================= */
+.cs-identity-body { display: flex; gap: 26px; align-items: flex-start; }
+.cs-identity-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* logo column: the ImageUpload becomes a tall, centered mark preview with its
+   controls stacked underneath, all inside a fixed-width column */
+.cs-identity-logo { flex-shrink: 0; width: 190px; }
+.cs-identity-logo .img-upload { flex-direction: column; align-items: stretch; gap: 12px; }
+.cs-identity-logo .img-drop {
+  width: 100%; height: 150px; border-radius: 10px;
+  background: var(--panel-2); border: 1px dashed var(--line);
+}
+.cs-identity-logo .img-drop img { object-fit: contain; padding: 16px;
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, .55)); }
+.cs-identity-logo .iu-meta { align-items: center; text-align: center; }
+.cs-identity-logo .iu-hint { font-size: 11px; }
+.cs-identity-logo .iu-acts { justify-content: center; }
+
+/* fields column: stacked rows, name + abbreviation side by side */
+.cs-identity-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 15px; }
+.cs-identity-fields .set-field { margin: 0; }
+.cs-field-row { display: flex; gap: 16px; }
+.cs-field-row > .set-field { flex: 1; min-width: 0; }
+
+@media (max-width: 820px) {
+  .cs-identity-body { flex-direction: column; }
+  .cs-identity-logo { width: 100%; }
+  .cs-identity-logo .img-drop { height: 120px; }
+  .cs-field-row { flex-direction: column; gap: 15px; }
+}
+
+/* character budget readout: the save fields are fixed-size */
+.cs-budget {
+  font-family: var(--font-display); font-size: 10.5px; font-weight: 600;
+  letter-spacing: .6px; color: var(--chalk-3); font-variant-numeric: tabular-nums;
+}
+.cs-budget.warn { color: var(--accent-orange); }
+.cs-field-label { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+
+/* =========================================================================
+   Member list (.cs-member)
+   ========================================================================= */
+.cs-count {
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: .7px; text-transform: uppercase; color: var(--chalk-3);
+  font-variant-numeric: tabular-nums;
+}
+.cs-count.warn { color: var(--accent-orange); }
+/* keep long conferences from ballooning the page: scroll past ~7 rows */
+.cs-member-scroll { max-height: 360px; overflow-y: auto; }
+.cs-member-row {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 48px; padding: 6px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  font-family: var(--font-display);
+  transition: background .12s ease;
+}
+.cs-member-row:last-child { border-bottom: none; }
+.cs-member-row:hover { background: rgba(255, 255, 255, .04); }
+.cs-member-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.cs-member-school { font-weight: 600; font-size: 14.5px; letter-spacing: .2px; color: var(--chalk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-member-nick { font-size: 11.5px; font-weight: 500; color: var(--chalk-3); }
+.cs-member-abbr {
+  flex-shrink: 0; min-width: 44px; text-align: center; padding: 3px 8px;
+  background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08); border-radius: 3px;
+  font-size: 11px; font-weight: 700; letter-spacing: .6px; color: var(--chalk-2);
+}
+.cs-member-empty { padding: 22px 18px; font-family: var(--font-display); font-size: 12.5px; font-weight: 500; letter-spacing: .5px; color: var(--chalk-3); }
+
+/* =========================================================================
+   Team move picker modal (.cs-picker)
+   ========================================================================= */
+.cs-picker {
+  width: 560px; max-width: 94vw; max-height: 82vh; display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.cs-picker-head { display: flex; align-items: center; gap: 12px; padding: 16px 20px 12px; border-bottom: 1px solid var(--line-soft); }
+.cs-picker-titles { flex: 1; min-width: 0; }
+.cs-picker-title { font-family: var(--font-hero); font-style: italic; font-weight: 900; font-size: 21px; text-transform: uppercase; letter-spacing: .6px; }
+.cs-picker-sub { font-family: var(--font-display); font-size: 12px; font-weight: 500; color: var(--chalk-3); margin-top: 3px; }
+.cs-picker-body { overflow-y: auto; padding: 10px 12px 14px; }
+.cs-dest {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  min-height: 52px; padding: 8px 12px; border-radius: 4px;
+  background: rgba(255, 255, 255, .035); border: none;
+  font-family: var(--font-display); color: var(--chalk);
+  transition: background .12s ease;
+}
+.cs-dest + .cs-dest, .cs-dest-divs + .cs-dest { margin-top: 8px; }
+.cs-dest:hover:not(:disabled) { background: var(--panel-3); }
+.cs-dest:disabled { opacity: .45; cursor: not-allowed; }
+.cs-dest-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.cs-dest-name { font-weight: 600; font-size: 14.5px; letter-spacing: .2px; }
+.cs-dest-meta { font-size: 11.5px; font-weight: 500; color: var(--chalk-3); }
+.cs-dest-state {
+  flex-shrink: 0; font-size: 10.5px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--chalk-3);
+}
+.cs-dest-state.full { color: var(--loss); }
+.cs-dest-state.under { color: var(--accent-orange); }
+/* division fan-out under an expanded destination */
+.cs-dest-divs { margin: 6px 0 8px 40px; display: flex; flex-direction: column; gap: 6px; }
+.cs-dest-div {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 8px 12px; border-radius: 4px; border: none; text-align: left;
+  background: rgba(255, 255, 255, .05);
+  font-family: var(--font-display); font-weight: 600; font-size: 13px; color: var(--chalk);
+  transition: background .12s ease;
+}
+.cs-dest-div:hover { background: var(--panel-3); }
+.cs-dest-div span { font-size: 11px; font-weight: 500; color: var(--chalk-3); }
+
+/* =========================================================================
+   Division editor (.cs-div)
+   ========================================================================= */
+.cs-div-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.cs-div-col { min-width: 0; }
+.cs-div-teams { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.cs-div-team {
+  display: flex; align-items: center; gap: 10px;
+  min-height: 44px; padding: 5px 10px;
+  background: rgba(255, 255, 255, .035); border-radius: 4px;
+  font-family: var(--font-display);
+}
+.cs-div-team-name { flex: 1; min-width: 0; font-weight: 600; font-size: 13.5px; color: var(--chalk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-div-swap {
+  flex-shrink: 0; padding: 5px 10px; border-radius: 3px; border: 1px solid var(--line-soft);
+  background: transparent; color: var(--chalk-3);
+  font-family: var(--font-display); font-size: 10.5px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+  transition: color .12s ease, background .12s ease, border-color .12s ease;
+}
+.cs-div-swap:hover { color: var(--cream-ink); background: var(--cream); border-color: transparent; }
+.cs-div-empty { padding: 14px 4px; font-family: var(--font-display); font-size: 12px; font-weight: 500; color: var(--chalk-3); }
+
+/* =========================================================================
+   Rivalry editor (.cs-riv)
+   ========================================================================= */
+.cs-riv-row {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 48px; padding: 6px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  font-family: var(--font-display);
+}
+.cs-riv-row:last-child { border-bottom: none; }
+.cs-riv-team { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 13.5px; color: var(--chalk); }
+.cs-riv-team.away { justify-content: flex-end; text-align: right; }
+.cs-riv-team i { font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-riv-vs {
+  flex-shrink: 0; font-size: 10.5px; font-weight: 700; letter-spacing: 1px;
+  color: var(--chalk-3); padding: 4px 8px; border: 1px solid var(--line-soft);
+  border-radius: 4px; background: var(--panel-2);
+}
+.cs-riv-name { flex-shrink: 0; max-width: 220px; font-size: 12px; font-weight: 500; color: var(--chalk-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-riv-name.none { color: var(--chalk-3); font-style: italic; }
+.cs-riv-add { display: flex; align-items: flex-end; gap: 10px; padding: 14px 18px 16px; border-top: 1px solid rgba(255, 255, 255, .06); flex-wrap: wrap; }
+.cs-riv-add .set-field { flex: 1; min-width: 150px; }
+.cs-riv-empty { padding: 20px 18px; font-family: var(--font-display); font-size: 12.5px; font-weight: 500; color: var(--chalk-3); }
+
+/* =========================================================================
+   Apply to game panel (.cs-apply)
+   ========================================================================= */
+.cs-gate {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 6px; margin-bottom: 16px;
+  background: rgba(255, 255, 255, .035); border-left: 3px solid var(--accent-orange);
+}
+.cs-gate.ready { border-left-color: var(--recruiting); }
+.cs-gate-ico { display: grid; place-items: center; width: 30px; height: 30px; flex-shrink: 0; color: var(--accent-orange); }
+.cs-gate.ready .cs-gate-ico { color: var(--recruiting); }
+.cs-gate-ico img { width: 26px; height: 26px; object-fit: contain; }
+.cs-gate-text { min-width: 0; }
+.cs-gate-state {
+  font-family: var(--font-display); font-size: 12px; font-weight: 700;
+  letter-spacing: .9px; text-transform: uppercase; color: var(--chalk);
+}
+.cs-gate-reason { margin-top: 3px; font-family: var(--font-body); font-size: 12.5px; line-height: 1.5; color: var(--chalk-2); }
+.cs-diff-list { margin: 0; padding: 0; list-style: none; }
+.cs-diff-list li {
+  display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 4px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  font-family: var(--font-display); font-size: 13px; font-weight: 500; color: var(--chalk-2);
+}
+.cs-diff-list li:last-child { border-bottom: none; }
+.cs-diff-list li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent-blue); flex-shrink: 0; }
+.cs-diff-none { padding: 14px 2px; font-family: var(--font-display); font-size: 12.5px; font-weight: 500; color: var(--chalk-3); }
+.cs-apply-actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.cs-apply-note { font-family: var(--font-display); font-size: 11px; font-weight: 500; letter-spacing: .4px; color: var(--chalk-3); }
+.cs-written {
+  display: block; margin-top: 4px; padding: 8px 10px; border-radius: 4px;
+  background: rgba(0, 0, 0, .35); border: 1px solid var(--line-soft);
+  font-family: var(--font-display); font-size: 12px; color: var(--chalk-2);
+  word-break: break-all;
+}
+.cs-report-list { margin: 0; padding: 0; list-style: none; }
+.cs-report-list li {
+  display: flex; align-items: center; gap: 10px; padding: 7px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  font-family: var(--font-body); font-size: 12.5px; line-height: 1.45; color: var(--chalk-2);
+}
+.cs-report-list li:last-child { border-bottom: none; }
+.cs-report-list li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--recruiting); flex-shrink: 0; }
+.cs-report-list.skipped li::before { background: var(--accent-orange); }
+
+/* =========================================================================
+   Draft save bar (.cs-savebar): sticky editor footer
+   ========================================================================= */
+.cs-savebar {
+  /* sit clear of the fixed 44px hint bar at the very bottom */
+  position: sticky; bottom: 58px; z-index: 20;
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 18px; padding: 12px 16px;
+  background: rgba(14, 16, 17, .92); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+}
+.cs-savebar-note {
+  flex: 1; min-width: 0;
+  font-family: var(--font-display); font-size: 12px; font-weight: 600;
+  letter-spacing: .6px; text-transform: uppercase; color: var(--chalk-3);
+}
+.cs-savebar.dirty .cs-savebar-note { color: var(--accent-orange); }
+.cs-savebar-note::before {
+  content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  margin-right: 9px; vertical-align: 1px; background: var(--chalk-3);
+}
+.cs-savebar.dirty .cs-savebar-note::before { background: var(--accent-orange); animation: pulse 1.8s ease-in-out infinite; }
+.cs-savebar-actions { display: inline-flex; align-items: center; gap: 10px; }
+
+/* =========================================================================
+   Classic (historic) conference logo picker (.cs-histlogos)
+   ========================================================================= */
+.cs-histlogos { margin-top: 14px; }
+.cs-histlogos-label {
+  display: block; margin-bottom: 8px;
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: .6px; text-transform: uppercase; color: var(--chalk-3);
+}
+.cs-histlogos-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+.cs-histlogo {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 8px 6px; border-radius: 8px; cursor: pointer;
+  background: rgba(0, 0, 0, .24); border: 1px solid var(--line-soft);
+  transition: border-color .12s, background .12s;
+}
+.cs-histlogo:hover { border-color: var(--chalk-3); background: rgba(0, 0, 0, .34); }
+.cs-histlogo.active { border-color: var(--cream); background: color-mix(in srgb, var(--cream) 14%, transparent); }
+.cs-histlogo-mark { width: 44px; height: 44px; display: grid; place-items: center; }
+.cs-histlogo-mark img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.cs-histlogo-label {
+  font-family: var(--font-display); font-size: 10px; font-weight: 600;
+  line-height: 1.2; text-align: center; color: var(--chalk-2);
+}
+.cs-histlogo.active .cs-histlogo-label { color: var(--cream); }
+
+/* =========================================================================
+   In-game logo setup via the MMC Modding Tools (.cs-modsetup)
+   ========================================================================= */
+.cs-modsetup-row { display: flex; align-items: flex-start; gap: 12px; }
+.cs-modsetup-ico { flex-shrink: 0; width: 24px; height: 24px; display: grid; place-items: center; color: var(--accent-blue); }
+.cs-modsetup-ico.ok { color: var(--recruiting); }
+.cs-modsetup-ico svg { width: 20px; height: 20px; }
+.cs-modsetup-text { font-family: var(--font-body); font-size: 13px; line-height: 1.5; color: var(--chalk-2); }
+.cs-modsetup-actions { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+.cs-modsetup-warn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-display); font-size: 12px; font-weight: 600; color: var(--accent-orange);
+}
+.cs-modsetup-warn svg { width: 15px; height: 15px; }
+.cs-modsetup-steps {
+  margin: 14px 0 4px; padding-left: 20px; display: flex; flex-direction: column; gap: 9px;
+  font-family: var(--font-body); font-size: 13px; line-height: 1.5; color: var(--chalk-2);
+}
+.cs-modsetup-steps b { color: var(--chalk); font-weight: 700; }
+.cs-modsetup-opt { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.cs-modsetup-opt code {
+  padding: 5px 10px; border-radius: 4px; background: rgba(0, 0, 0, .38);
+  border: 1px solid var(--line-soft); font-size: 12.5px; color: var(--chalk);
+}
+.cs-modsetup-copy {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+  border-radius: 4px; border: 1px solid var(--line-soft); background: transparent;
+  font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--chalk-2); transition: color .12s, border-color .12s;
+}
+.cs-modsetup-copy:hover { color: var(--cream-ink); background: var(--cream); border-color: transparent; }
+.cs-modsetup-copy svg { width: 13px; height: 13px; }
+.cs-modsetup-note {
+  display: block; margin-top: 12px;
+  font-family: var(--font-display); font-size: 11.5px; font-weight: 500;
+  line-height: 1.4; color: var(--chalk-3); max-width: 460px;
+}
+.cs-modsetup-path { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.cs-modsetup-path .set-input { flex: 1; min-width: 0; }
+.cs-modsetup-text code, .cs-modsetup-steps code {
+  padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, .38);
+  border: 1px solid var(--line-soft); font-size: 12px; color: var(--chalk);
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================================
+   Save progress overlay (.cs-save-overlay)
+   ========================================================================= */
+.cs-save-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  display: grid; place-items: center;
+  background: rgba(6, 8, 9, .72); backdrop-filter: blur(4px);
+}
+.cs-save-card {
+  width: 440px; max-width: 92vw; padding: 26px 28px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.cs-save-title {
+  font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: 24px; text-transform: uppercase; letter-spacing: .6px; color: var(--chalk);
+  margin-bottom: 18px;
+}
+.cs-save-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.cs-save-step { display: flex; align-items: flex-start; gap: 12px; }
+.cs-save-mark { flex-shrink: 0; width: 22px; height: 22px; display: grid; place-items: center; }
+.cs-save-mark svg { width: 18px; height: 18px; }
+.cs-save-step.done .cs-save-mark { color: var(--recruiting); }
+.cs-save-step.active .cs-save-mark { color: var(--team); }
+.cs-save-step.active .cs-save-mark svg { animation: spin 1s linear infinite; }
+.cs-save-step.skipped .cs-save-mark { color: var(--accent-orange); }
+.cs-save-dot { width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--line); }
+.cs-save-step-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cs-save-step-label {
+  font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--chalk-2);
+}
+.cs-save-step.active .cs-save-step-label, .cs-save-step.done .cs-save-step-label,
+.cs-save-step.skipped .cs-save-step-label { color: var(--chalk); }
+.cs-save-step-note { font-family: var(--font-body); font-size: 12px; color: var(--chalk-3); line-height: 1.4; }
+
+/* =========================================================================
+   Create conference modal (.cs-create)
+   ========================================================================= */
+.cs-create {
+  width: 520px; max-width: 94vw;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.cs-create-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px 12px; }
+.cs-create-title { font-family: var(--font-hero); font-style: italic; font-weight: 900; font-size: 21px; text-transform: uppercase; letter-spacing: .6px; }
+.cs-create-body { padding: 4px 22px 8px; }
+.cs-create-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 22px 20px; }

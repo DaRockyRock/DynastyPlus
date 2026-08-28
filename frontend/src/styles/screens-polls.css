@@ -1,0 +1,356 @@
+/* ---- Polls tab: the national-poll editor ---- */
+
+.poll-editor { display: flex; flex-direction: column; gap: 14px; }
+
+.poll-editor-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.poll-editor-status { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.poll-editor-watch {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--chalk-2); letter-spacing: .02em;
+}
+.poll-editor-last { margin: -6px 0 0; font-size: 11.5px; color: var(--chalk-3); }
+
+.poll-layout {
+  display: grid; grid-template-columns: minmax(280px, 340px) 1fr;
+  gap: 14px; align-items: start;
+}
+@media (max-width: 900px) { .poll-layout { grid-template-columns: 1fr; } }
+
+.poll-controls { display: flex; flex-direction: column; gap: 14px; }
+.poll-mode-note { margin: 10px 2px 0; font-size: 12px; line-height: 1.45; color: var(--chalk-2); }
+
+/* --- the ranking rows (view + edit) --- */
+.poll-row {
+  position: relative; display: flex; align-items: center; gap: 10px;
+  padding: 6px 8px; border-bottom: 1px solid var(--line-soft);
+  transition: background .12s ease;
+}
+.poll-row:last-child { border-bottom: none; }
+.poll-row:hover { background: rgba(255, 255, 255, .04); }
+.poll-row-num {
+  font-family: var(--font-hero); font-style: italic; font-size: 17px;
+  min-width: 26px; text-align: right; color: var(--cream);
+}
+.poll-row-team { flex: 1; font-family: var(--font-display); font-size: 13.5px; letter-spacing: .02em; }
+.poll-row-rec { font-size: 12px; color: var(--chalk-2); min-width: 34px; text-align: right; }
+.poll-row.is-user { background: linear-gradient(90deg, color-mix(in srgb, var(--team) 14%, transparent), transparent 60%); }
+.poll-row.is-user::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--team); }
+.poll-row.is-user .poll-row-num { color: var(--team); }
+
+.poll-row-delta {
+  display: inline-flex; align-items: center; gap: 1px;
+  font-size: 11px; font-weight: 600; min-width: 30px; justify-content: flex-end;
+}
+.poll-row-delta.up { color: var(--win); }
+.poll-row-delta.down { color: var(--loss); }
+
+/* edit affordances */
+.poll-row.is-editable { cursor: grab; }
+.poll-row.is-dragging { opacity: .45; cursor: grabbing; }
+.poll-row.is-drag-over { box-shadow: inset 0 2px 0 var(--team); }
+.poll-row-grip { color: var(--chalk-3); font-size: 12px; letter-spacing: -1px; user-select: none; }
+.poll-row-actions { display: inline-flex; gap: 2px; opacity: 0; transition: opacity .12s ease; }
+.poll-row:hover .poll-row-actions { opacity: 1; }
+.poll-row-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border: 1px solid var(--line-soft); border-radius: 4px;
+  background: transparent; color: var(--chalk); cursor: pointer;
+}
+.poll-row-btn:hover { background: rgba(255, 255, 255, .08); }
+.poll-row-btn:disabled { opacity: .3; cursor: default; }
+.poll-row-btn-remove:hover { color: var(--loss); }
+
+.poll-editor-list { display: flex; flex-direction: column; }
+.poll-editor-foot { padding: 10px 4px 2px; display: flex; flex-direction: column; gap: 8px; }
+.poll-editor-note { margin: 0; font-size: 11.5px; color: var(--chalk-3); }
+
+/* ============================================================
+   The rankings hub: branded poll switcher, rank card grid,
+   team resumes, the tale of the tape, and the scoreboard.
+   ============================================================ */
+
+.rankings-hub { display: flex; flex-direction: column; gap: 16px; }
+
+.rh-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.rh-bar-side { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rh-foot { display: flex; justify-content: center; padding: 4px 0 10px; }
+
+/* --- the poll brand marks --- */
+.poll-badge { display: inline-flex; align-items: center; line-height: 0; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .45)); }
+.poll-badge-lockup { gap: 10px; line-height: 1.1; }
+.poll-badge-label { font-family: var(--font-display); font-size: 14px; letter-spacing: .04em; }
+
+/* --- the poll switcher --- */
+.poll-switch { display: inline-flex; gap: 8px; }
+.poll-switch-tab {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 8px 16px 8px 10px; border-radius: var(--radius);
+  border: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--panel-2) 55%, transparent);
+  color: var(--chalk-2);
+  transition: background .14s ease, border-color .14s ease, color .14s ease;
+}
+.poll-switch-tab:hover { background: var(--panel-2); color: var(--chalk); }
+.poll-switch-tab.active {
+  background: var(--cream); border-color: var(--cream); color: var(--cream-ink);
+  box-shadow: var(--shadow-sm);
+}
+.poll-switch-label {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 13.5px; letter-spacing: .05em; text-transform: uppercase;
+}
+
+/* --- the rank card grid --- */
+.rank-card-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 10px;
+}
+
+.rank-card {
+  --rc-team: var(--team);
+  position: relative; display: flex; align-items: center;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-soft);
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--rc-team) 16%, transparent), transparent 55%),
+    var(--panel);
+  overflow: hidden;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.rank-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--rc-team), color-mix(in srgb, var(--rc-team) 35%, transparent));
+}
+.rank-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--rc-team) 55%, var(--line));
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .45);
+}
+.rank-card.is-user { border-color: color-mix(in srgb, var(--cream) 55%, var(--line-soft)); }
+.rank-card.is-user::after {
+  content: 'YOU'; position: absolute; top: 0; right: 0;
+  padding: 2px 8px 3px; border-bottom-left-radius: var(--radius);
+  background: var(--cream); color: var(--cream-ink);
+  font-family: var(--font-display); font-size: 9.5px; font-weight: 900; letter-spacing: .12em;
+}
+.rank-card.is-compared { border-color: var(--cfp); box-shadow: 0 0 0 1px var(--cfp); }
+
+.rc-body {
+  display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;
+  padding: 12px 14px 12px 8px; text-align: left;
+  background: transparent; border: none; color: var(--chalk);
+}
+.rc-body .logo-plate, .rc-body .team-mono { align-self: center; }
+.rc-rank {
+  font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: 30px; line-height: 1; min-width: 40px; text-align: center;
+  color: var(--cream);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .5);
+}
+.rank-card.is-top4 .rc-rank { color: var(--accent-gold); }
+.rc-id { flex: 1 1 auto; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.rc-school {
+  font-family: var(--font-display); font-weight: 700; font-size: 15.5px;
+  letter-spacing: .03em; text-transform: uppercase; line-height: 1.08;
+  /* wrap to a second line rather than truncate: long programs (North Dakota
+     State, Florida International, Southern Mississippi) must show in full */
+  overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.rc-nick { font-size: 11px; color: var(--chalk-3); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* the facts column is fixed-width so a long conference (Mountain West,
+   Independents, Conference USA) can never steal room from the team name */
+.rc-facts { flex: 0 0 62px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.rc-rec { font-family: var(--font-hero); font-size: 18px; line-height: 1; }
+.rc-conf { font-size: 10px; color: var(--chalk-3); letter-spacing: .05em; text-transform: uppercase; line-height: 1.12; }
+
+.rc-compare {
+  flex-shrink: 0; margin-left: 12px;
+  min-width: 26px; height: 22px; padding: 0 5px;
+  border-radius: 4px; border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel-3) 80%, transparent);
+  color: var(--chalk-2); font-family: var(--font-display);
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  opacity: .35; transition: opacity .14s ease, background .14s ease, color .14s ease;
+}
+.rank-card:hover .rc-compare, .rank-card.is-compared .rc-compare { opacity: 1; }
+.rc-compare:hover { background: var(--cfp); border-color: var(--cfp); color: #fff; }
+.rank-card.is-compared .rc-compare { background: var(--cfp); border-color: var(--cfp); color: #fff; }
+
+.rc-open-hint {
+  position: absolute; left: 52px; bottom: 3px;
+  font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--rc-team) 75%, var(--chalk));
+  opacity: 0; transform: translateY(2px);
+  transition: opacity .14s ease, transform .14s ease;
+  pointer-events: none;
+}
+.rank-card:hover .rc-open-hint { opacity: 1; transform: none; }
+
+/* --- the resume modal --- */
+.resume-modal {
+  width: min(1040px, 94vw); max-height: 90vh;
+  display: flex; flex-direction: column;
+  border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--field-1); box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.resume-modal-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 14px; border-bottom: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--panel-2) 70%, transparent);
+}
+.resume-modal-body { padding: 0 18px 20px; overflow-y: auto; }
+
+/* --- the team resume --- */
+.team-resume { --tr-team: var(--team); display: flex; flex-direction: column; gap: 18px; }
+.tr-head {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin: 0 -18px; padding: 20px 18px 18px;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--tr-team) 38%, transparent), transparent 62%),
+    linear-gradient(180deg, color-mix(in srgb, var(--tr-team) 14%, transparent), transparent);
+  border-bottom: 1px solid var(--line-soft);
+}
+.tr-title { flex: 1; min-width: 180px; }
+.tr-school {
+  margin: 0; font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: 38px; line-height: .95; letter-spacing: .01em; text-transform: uppercase;
+}
+.tr-nick { font-size: 12px; color: var(--chalk-2); letter-spacing: .06em; text-transform: uppercase; }
+.tr-badges { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tr-poll-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 9px; border-radius: 4px;
+  border: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--panel-2) 75%, transparent);
+  font-family: var(--font-hero); font-size: 15px;
+}
+.tr-record { font-family: var(--font-hero); font-size: 26px; }
+.tr-confrec { font-size: 11.5px; color: var(--chalk-2); letter-spacing: .04em; text-transform: uppercase; }
+.tr-streak {
+  padding: 3px 9px; border-radius: 4px; font-family: var(--font-hero); font-size: 15px;
+}
+.tr-streak.tone-win { background: color-mix(in srgb, var(--win) 20%, transparent); color: var(--win); }
+.tr-streak.tone-loss { background: color-mix(in srgb, var(--loss) 20%, transparent); color: var(--loss); }
+.tr-none { margin: 6px 2px; font-size: 12px; color: var(--chalk-3); }
+
+/* summary tiles */
+.resume-summary-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;
+}
+.resume-tile {
+  display: flex; flex-direction: column; gap: 3px; align-items: center;
+  padding: 12px 8px 10px; border-radius: var(--radius);
+  border: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--panel-2) 55%, transparent);
+}
+.rt-value { font-family: var(--font-hero); font-size: 24px; line-height: 1; }
+.resume-tile.tone-win .rt-value { color: var(--win); }
+.resume-tile.tone-loss .rt-value { color: var(--loss); }
+.rt-label { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--chalk-3); }
+
+/* quality wins / losses */
+.tr-quality { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .tr-quality { grid-template-columns: 1fr; } }
+
+/* game rows */
+.resume-game {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 8px; border-bottom: 1px solid var(--line-soft);
+}
+.resume-game:last-child { border-bottom: none; }
+.rg-result {
+  min-width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 4px; font-family: var(--font-display); font-weight: 900; font-size: 12.5px;
+}
+.resume-game.is-win .rg-result { background: color-mix(in srgb, var(--win) 22%, transparent); color: var(--win); }
+.resume-game.is-loss .rg-result { background: color-mix(in srgb, var(--loss) 22%, transparent); color: var(--loss); }
+.rg-score { font-family: var(--font-hero); font-size: 15.5px; min-width: 52px; }
+.rg-venue { min-width: 20px; text-align: center; font-size: 10.5px; color: var(--chalk-3); text-transform: uppercase; }
+.rg-opp { flex: 1; display: inline-flex; align-items: baseline; gap: 6px; font-family: var(--font-display); font-size: 13.5px; letter-spacing: .02em; min-width: 0; }
+.rg-opprank { color: var(--cfp); font-weight: 700; }
+.rg-opprec { font-size: 11.5px; color: var(--chalk-3); }
+.rg-label {
+  padding: 2px 8px; border-radius: 3px; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase;
+  background: color-mix(in srgb, var(--accent-gold) 16%, transparent); color: var(--accent-gold);
+  white-space: nowrap;
+}
+.rg-conf {
+  padding: 2px 7px; border-radius: 3px; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase;
+  background: color-mix(in srgb, var(--national) 20%, transparent); color: var(--chalk-2);
+}
+.resume-game.is-upcoming { opacity: .8; }
+
+.tr-upcoming-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 18px; }
+
+/* --- the tale of the tape --- */
+.tale-of-the-tape { display: flex; flex-direction: column; gap: 18px; padding-top: 16px; }
+.tott-heads { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.tott-team { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.tott-team.tott-b { flex-direction: row-reverse; text-align: right; }
+.tott-team-id { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tott-team.tott-b .tott-team-id { align-items: flex-end; }
+.tott-school {
+  font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: 26px; line-height: 1; text-transform: uppercase;
+}
+.tott-ranks { display: inline-flex; gap: 6px; }
+.tott-ranks .tr-poll-chip { font-size: 12.5px; padding: 3px 7px; gap: 5px; }
+.tott-vs {
+  font-family: var(--font-hero); font-style: italic; font-weight: 900; font-size: 22px;
+  color: var(--chalk-3); flex-shrink: 0;
+}
+.tott-rows { border: 1px solid var(--line-soft); border-radius: var(--radius); overflow: hidden; }
+.tott-row {
+  display: grid; grid-template-columns: 1fr minmax(140px, auto) 1fr; align-items: center;
+  padding: 9px 16px; border-bottom: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--panel-2) 40%, transparent);
+}
+.tott-row:nth-child(even) { background: color-mix(in srgb, var(--panel-2) 18%, transparent); }
+.tott-row:last-child { border-bottom: none; }
+.tott-label {
+  text-align: center; font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--chalk-3); padding: 0 14px;
+}
+.tott-val { font-family: var(--font-hero); font-size: 19px; line-height: 1; }
+.tott-val.side-a { text-align: left; }
+.tott-val.side-b { text-align: right; }
+.tott-val.side-a.lead { color: color-mix(in srgb, var(--tt-a) 60%, #fff); text-shadow: 0 0 14px color-mix(in srgb, var(--tt-a) 65%, transparent); }
+.tott-val.side-b.lead { color: color-mix(in srgb, var(--tt-b) 60%, #fff); text-shadow: 0 0 14px color-mix(in srgb, var(--tt-b) 65%, transparent); }
+.tott-wins { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) {
+  .tott-wins { grid-template-columns: 1fr; }
+  .tott-school { font-size: 20px; }
+}
+
+/* --- the scoreboard view --- */
+.week-scoreboard { display: flex; flex-direction: column; gap: 20px; }
+.sb-label {
+  padding: 1px 7px; border-radius: 3px; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase;
+  background: color-mix(in srgb, var(--accent-gold) 16%, transparent); color: var(--accent-gold);
+}
+
+/* --- the algorithm picker --- */
+.algo-picker { display: flex; flex-direction: column; gap: 8px; }
+.algo-card {
+  display: flex; flex-direction: column; gap: 4px; text-align: left;
+  padding: 9px 11px; border: 1px solid var(--line-soft); border-radius: 6px;
+  background: color-mix(in srgb, var(--panel-2) 40%, transparent);
+  color: var(--chalk); cursor: pointer; transition: border-color .12s ease, background .12s ease;
+}
+.algo-card:hover { background: color-mix(in srgb, var(--panel-2) 70%, transparent); }
+.algo-card.active {
+  border-color: var(--cream);
+  background: color-mix(in srgb, var(--cream) 12%, transparent);
+}
+.algo-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.algo-card-name { font-family: var(--font-display); font-size: 13.5px; letter-spacing: .03em; }
+.algo-card-uses { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--chalk-3); white-space: nowrap; }
+.algo-card-blurb { font-size: 11.5px; line-height: 1.45; color: var(--chalk-2); }

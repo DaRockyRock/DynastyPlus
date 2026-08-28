@@ -1,0 +1,162 @@
+/* Page styles: screens-schedule (see docs/cfb27-ui.md). Owned by the custom
+   schedule generator; prefix every class .sr-. Do not add shared classes here. */
+
+/* =========================================================================
+   Editor layout (.sr-layout): rules column + report/preview column
+   ========================================================================= */
+.sr-embedded { width: 100%; }
+.sr-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.sr-head h1 {
+  flex: 1; margin: 0; font-family: var(--font-hero); font-style: italic;
+  font-size: 26px; letter-spacing: .5px; text-transform: uppercase;
+}
+.sr-layout { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 18px; align-items: start; }
+.sr-controls, .sr-report { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+@media (max-width: 1080px) { .sr-layout { grid-template-columns: 1fr; } }
+
+/* =========================================================================
+   Conference tabs (.sr-tabs): one conference's rules at a time. Dark chips
+   over the field, the game's cream selected state for the active tab.
+   ========================================================================= */
+.sr-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.sr-tab {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  font-family: var(--font-display); font-size: 11.5px; font-weight: 600;
+  letter-spacing: .6px; text-transform: uppercase; color: var(--chalk-2);
+  background: rgba(14, 16, 17, .8); border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 4px; padding: 7px 12px;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.sr-tab:hover { color: var(--chalk); border-color: rgba(255, 255, 255, .18); }
+.sr-tab.active { background: var(--cream); border-color: var(--cream); color: var(--cream-ink); font-weight: 700; }
+.sr-tab .conf-logo { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
+.sr-tab.active .conf-logo { filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .25)); }
+.sr-tab-vs {
+  font-family: var(--font-hero); font-style: italic; font-size: 13px;
+  font-weight: 900; letter-spacing: .5px; line-height: 1;
+}
+.sr-tab-count {
+  min-width: 17px; padding: 1px 5px; border-radius: 9px; text-align: center;
+  font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums;
+  background: rgba(255, 255, 255, .1); color: var(--chalk-2);
+}
+.sr-tab.active .sr-tab-count { background: rgba(22, 24, 26, .16); color: var(--cream-ink); }
+.sr-conf-title { display: inline-flex; align-items: center; gap: 9px; }
+.sr-conf-title .conf-logo { width: 22px; height: 22px; object-fit: contain; }
+
+.sr-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 7px 0; }
+.sr-row-label {
+  display: flex; flex-direction: column; gap: 2px;
+  font-family: var(--font-display); font-weight: 600; font-size: 13.5px;
+  letter-spacing: .3px; color: var(--chalk);
+}
+.sr-row-sub { font-size: 11px; font-weight: 500; color: var(--chalk-3); letter-spacing: .3px; }
+.sr-stack { display: flex; flex-direction: column; gap: 4px; }
+
+/* =========================================================================
+   Protected rivalry rows (.sr-riv)
+   ========================================================================= */
+.sr-riv-list { display: flex; flex-direction: column; }
+/* one protected rivalry: big facing helmets on the LEFT, spanning the full
+   row height, with the name + week/site/primary/remove STACKED beside them */
+.sr-riv-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, .06);
+}
+.sr-riv-row:last-child { border-bottom: none; }
+/* the pair: two big game-rendered helmets facing each other around a VS
+   puck. Helmets carry the drop shadow already. */
+.sr-riv-pair { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+.sr-riv-pair .hm-helmet, .sr-riv-pair .team-logo, .sr-riv-pair .team-mono { flex-shrink: 0; }
+.sr-riv-vs {
+  flex-shrink: 0; font-family: var(--font-hero); font-style: italic;
+  font-size: 18px; font-weight: 900; letter-spacing: .5px; line-height: 1;
+  color: var(--chalk-3); padding: 0 2px;
+}
+/* the stacked fields: rivalry name on its own line, week/site/primary/remove
+   on the line below */
+.sr-riv-fields { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.sr-riv-name {
+  width: 100%;
+  font-family: var(--font-display); font-weight: 600;
+}
+.sr-riv-name::placeholder { color: var(--chalk-3); font-weight: 500; }
+.sr-riv-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sr-riv-controls .select-wrap select, .sr-riv-controls select { min-width: 0; }
+.sr-riv-primary {
+  display: inline-flex; align-items: center; gap: 5px; cursor: pointer;
+  font-family: var(--font-display); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .8px; text-transform: uppercase; color: var(--chalk-3);
+  border: 1px solid rgba(255, 255, 255, .12); border-radius: 3px; padding: 4px 8px;
+  background: transparent; transition: all .12s ease;
+}
+.sr-riv-primary.on { color: var(--gold, #e8c35a); border-color: rgba(232, 195, 90, .5); background: rgba(232, 195, 90, .08); }
+.sr-riv-empty { padding: 14px 0; font-family: var(--font-display); font-size: 12.5px; font-weight: 500; color: var(--chalk-3); }
+.sr-riv-add { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; padding-top: 10px; }
+.sr-riv-add .set-field, .sr-riv-add .form-field { flex: 1 1 150px; min-width: 130px; margin: 0; }
+
+/* =========================================================================
+   Feasibility report (.sr-feas)
+   ========================================================================= */
+.sr-feas-list { display: flex; flex-direction: column; gap: 10px; }
+.sr-feas-item {
+  padding: 10px 12px; border-radius: 6px;
+  background: rgba(214, 69, 69, .08); border: 1px solid rgba(214, 69, 69, .35);
+  font-family: var(--font-display);
+}
+.sr-feas-item.warn { background: rgba(232, 195, 90, .07); border-color: rgba(232, 195, 90, .3); }
+.sr-feas-msg { font-size: 13px; font-weight: 600; letter-spacing: .2px; color: var(--chalk); }
+.sr-feas-fix { margin-top: 4px; font-size: 11.5px; font-weight: 500; color: var(--chalk-2); }
+.sr-feas-fix::before { content: 'Fix: '; font-weight: 700; letter-spacing: .5px; color: var(--chalk-3); text-transform: uppercase; font-size: 10px; }
+.sr-feas-ok { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-family: var(--font-display); font-weight: 600; font-size: 13px; color: var(--chalk); }
+.sr-feas-ok .dot { width: 9px; height: 9px; border-radius: 50%; background: #46b06a; box-shadow: 0 0 8px rgba(70, 176, 106, .8); }
+
+/* =========================================================================
+   Schedule preview (.sr-prev)
+   ========================================================================= */
+.sr-prev-stats { display: flex; gap: 16px; flex-wrap: wrap; padding-bottom: 8px; }
+.sr-prev-stat { font-family: var(--font-display); font-size: 12px; font-weight: 600; letter-spacing: .4px; color: var(--chalk-2); }
+.sr-prev-stat b { color: var(--chalk); font-variant-numeric: tabular-nums; }
+/* the week rail: one numbered chip per season week, cream selected state, a
+   gold dot on the user's game weeks */
+.sr-wk-tabs { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 0 10px; }
+.sr-wk-tab {
+  position: relative; min-width: 34px; height: 30px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 12.5px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--chalk-2);
+  background: rgba(14, 16, 17, .8); border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 4px; padding: 0 8px;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.sr-wk-tab:hover { color: var(--chalk); border-color: rgba(255, 255, 255, .18); }
+.sr-wk-tab.active { background: var(--cream); border-color: var(--cream); color: var(--cream-ink); }
+.sr-wk-dot {
+  position: absolute; top: 3px; right: 3px; width: 5px; height: 5px;
+  border-radius: 50%; background: var(--gold, #e8c35a);
+}
+.sr-wk-head {
+  display: flex; align-items: center; gap: 10px; padding: 7px 2px;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+  font-family: var(--font-display); font-weight: 700; font-size: 12.5px;
+  letter-spacing: .8px; text-transform: uppercase; color: var(--chalk-2);
+}
+.sr-prev-count { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--chalk-3); font-variant-numeric: tabular-nums; }
+.sr-prev-game {
+  display: flex; align-items: center; gap: 8px; padding: 5px 4px;
+  font-family: var(--font-display); font-size: 12.5px; font-weight: 500; color: var(--chalk-2);
+}
+.sr-prev-game.user { background: rgba(255, 255, 255, .05); border-radius: 4px; color: var(--chalk); font-weight: 700; }
+.sr-prev-side { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.sr-prev-at { font-size: 10px; font-weight: 700; color: var(--chalk-3); letter-spacing: .6px; }
+.sr-prev-tags { margin-left: auto; display: inline-flex; gap: 5px; }
+.sr-prev-tag {
+  font-size: 9px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 3px; border: 1px solid rgba(255, 255, 255, .14); color: var(--chalk-3);
+}
+.sr-prev-tag.rivalry, .sr-prev-tag.rival { color: var(--gold, #e8c35a); border-color: rgba(232, 195, 90, .4); }
+.sr-prev-tag.changed { color: #6fb3e0; border-color: rgba(111, 179, 224, .4); }
+.sr-prev-tag.locked { color: var(--chalk-3); background: rgba(255, 255, 255, .05); }
+
+/* non-conference rivals per-team tally */
+.sr-nc-note { font-family: var(--font-display); font-size: 11.5px; font-weight: 500; color: var(--chalk-3); letter-spacing: .3px; padding: 2px 0 8px; }

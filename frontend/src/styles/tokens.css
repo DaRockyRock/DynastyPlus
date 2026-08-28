@@ -1,0 +1,183 @@
+/* ============================================================
+   CFBMod design tokens - "CFB 27 companion"
+   The app reads as a second screen of EA's College Football 27:
+   real game typefaces (Kuunari Compressed for hero headlines,
+   Masifa CN for UI labels, Masifa for body), charcoal panels and
+   cream selected states over a deep team-color field with light
+   beams. Team color is injected at runtime as --team / --team-alt.
+   Fonts are extracted from the local game install by
+   scripts/extract_game_assets.py and served at /game-assets/fonts.
+   ============================================================ */
+
+/* ---- game typefaces ---- */
+@font-face {
+  font-family: 'Kuunari';
+  src: url('/game-assets/fonts/kuunari-mediumcompressed.ttf') format('truetype');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Kuunari';
+  src: url('/game-assets/fonts/kuunari-mediumcompresseditalic.ttf') format('truetype');
+  font-weight: 500; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Kuunari';
+  src: url('/game-assets/fonts/kuunari-boldcompressed.ttf') format('truetype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Kuunari';
+  src: url('/game-assets/fonts/kuunari-blackcompressed.ttf') format('truetype');
+  font-weight: 900; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Kuunari';
+  src: url('/game-assets/fonts/kuunari-blackcompresseditalic.ttf') format('truetype');
+  font-weight: 900; font-style: italic; font-display: swap;
+}
+
+@font-face {
+  font-family: 'Masifa CN';
+  src: url('/game-assets/fonts/masifacn-regular.ttf') format('truetype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Masifa CN';
+  src: url('/game-assets/fonts/masifacn-regularit.ttf') format('truetype');
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Masifa CN';
+  src: url('/game-assets/fonts/masifacn-medium.ttf') format('truetype');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Masifa CN';
+  src: url('/game-assets/fonts/masifacn-mediumit.ttf') format('truetype');
+  font-weight: 500; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Masifa CN';
+  src: url('/game-assets/fonts/masifacn-bold.ttf') format('truetype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Masifa CN';
+  src: url('/game-assets/fonts/masifacn-black.ttf') format('truetype');
+  font-weight: 900; font-style: normal; font-display: swap;
+}
+
+@font-face {
+  font-family: 'Masifa';
+  src: url('/game-assets/fonts/masifa-regular.ttf') format('truetype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Masifa';
+  src: url('/game-assets/fonts/masifa-medium.ttf') format('truetype');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+/* Masifa ships no true bold; let CN bold cover 700+ via the stack below. */
+
+:root {
+  /* team color (overridden at runtime) */
+  --team: #046a38;
+  --team-alt: #b9975b;
+
+  /* field (background) ramp - charcoal panels over the team-color field.
+     Panel surfaces are neutral near-black like the game's menu buttons. */
+  --field-0: #0a0d0d;
+  --field-1: #0e1112;
+  --panel: rgba(18, 20, 22, 0.88);
+  --panel-2: #1e2123;
+  --panel-3: #2a2e30;
+  --line: #383d40;
+  --line-soft: #262a2c;
+
+  /* cream: the game's selected/highlight surface */
+  --cream: #f0e9da;
+  --cream-ink: #16181a;
+
+  /* chalk (text) - neutral, not blue */
+  --chalk: #f4f6f6;
+  --chalk-2: #b6bdbf;
+  --chalk-3: #7d8689;
+
+  /* broadcast accent palette (tuned to the game HUD) */
+  --cfp: #3f8cff;         /* CFP blue */
+  --accent-orange: #ff9e2c;
+  --recruiting: #35d162;  /* recruiting green (game job-security green) */
+  --accent-purple: #b06bff;
+  --accent-gold: #eec84f;
+  --accent-blue: #4db8ff;
+  --program: var(--team);
+  --national: #79838a;
+  --win: #35d162;
+  --loss: #ff5257;
+
+  /* typography: hero display / UI condensed / body */
+  --font-hero: 'Kuunari', 'Saira Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --font-display: 'Masifa CN', 'Saira Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'Masifa', 'Masifa CN', 'Saira', system-ui, sans-serif;
+
+  /* geometry - the game is rectangles with tight 4-6px radii */
+  --shear: -10deg;
+  --cut: 10px;
+  --chamfer: 12px;
+  --radius: 6px;
+  --radius-sm: 4px;
+
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --glow: 0 0 0 1px color-mix(in srgb, var(--team) 40%, transparent);
+
+  --maxw: 1440px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+/* The field: the game's menu backdrop. A deep, saturated wash of the team
+   color falling to black, crossed by two faint light beams and a thin bright
+   strip glow up top (the menu room's neon light). */
+body {
+  font-family: var(--font-body);
+  color: var(--chalk);
+  background-color: var(--field-0);
+  background-image:
+    linear-gradient(115deg,
+      transparent 0%, transparent 18%,
+      rgba(255, 255, 255, 0.05) 27%, transparent 33%,
+      transparent 55%, rgba(255, 255, 255, 0.03) 64%, transparent 70%),
+    radial-gradient(1300px 540px at 72% -180px,
+      color-mix(in srgb, var(--team) 42%, transparent), transparent 62%),
+    linear-gradient(158deg,
+      color-mix(in srgb, var(--team) 40%, #0b0e0d) 0%,
+      color-mix(in srgb, var(--team) 24%, #0a0c0c) 44%,
+      #080a0a 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+#root { position: relative; z-index: 1; }
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+::selection { background: var(--team); color: #fff; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--panel-3); border: 2px solid transparent; background-clip: padding-box; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--line); }
+::-webkit-scrollbar-track { background: transparent; }
+
+.hidden { display: none !important; }
+
+/* shared entrance motion */
+@keyframes hud-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes hud-wipe { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }

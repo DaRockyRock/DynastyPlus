@@ -1,0 +1,94 @@
+{
+  "_comment": "Default protected conference rivalries, keyed by the save's conference key. Companion-side flavor (the game save has no rivalry field). Team names must match the save's full names exactly; pairs whose teams are not both current members are dropped at load. Seeded into the Conference Setup editor.",
+  "ACC": [
+    {"a": "Clemson Tigers", "b": "Florida State Seminoles", "name": "Atlantic Clash"},
+    {"a": "North Carolina Tar Heels", "b": "NC State Wolfpack", "name": "Carolina Rivalry"},
+    {"a": "Duke Blue Devils", "b": "North Carolina Tar Heels", "name": "Tobacco Road"},
+    {"a": "Virginia Cavaliers", "b": "Virginia Tech Hokies", "name": "Commonwealth Cup"},
+    {"a": "Miami Hurricanes", "b": "Florida State Seminoles", "name": "Sunshine Showdown"},
+    {"a": "Georgia Tech Yellow Jackets", "b": "Clemson Tigers", "name": "Southern Rivalry"},
+    {"a": "Louisville Cardinals", "b": "Boston College Eagles", "name": "Cardinal Cup"},
+    {"a": "Stanford Cardinal", "b": "California Golden Bears", "name": "Big Game"}
+  ],
+  "American": [
+    {"a": "Army Black Knights", "b": "Navy Midshipmen", "name": "Army-Navy Game"},
+    {"a": "East Carolina Pirates", "b": "USF Bulls", "name": "War on I-4"},
+    {"a": "Memphis Tigers", "b": "Tulane Green Wave", "name": "Southern Heritage Classic"},
+    {"a": "Tulsa Golden Hurricane", "b": "Rice Owls", "name": "Southwest Clash"},
+    {"a": "UTSA Roadrunners", "b": "North Texas Mean Green", "name": "Battle for the Alamo"},
+    {"a": "Temple Owls", "b": "UAB Blazers", "name": "American Bowl"},
+    {"a": "Charlotte 49ers", "b": "Florida Atlantic Owls", "name": "Coastal Cup"}
+  ],
+  "Big_12": [
+    {"a": "Kansas Jayhawks", "b": "Kansas State Wildcats", "name": "Sunflower Showdown"},
+    {"a": "Arizona Wildcats", "b": "Arizona State Sun Devils", "name": "Territorial Cup"},
+    {"a": "Baylor Bears", "b": "TCU Horned Frogs", "name": "Revivalry"},
+    {"a": "Oklahoma State Cowboys", "b": "Texas Tech Red Raiders", "name": "Saddle Duel"},
+    {"a": "Utah Utes", "b": "BYU Cougars", "name": "Holy War"},
+    {"a": "Colorado Buffaloes", "b": "Utah Utes", "name": "Rumble in the Rockies"},
+    {"a": "Cincinnati Bearcats", "b": "West Virginia Mountaineers", "name": "River City Rivalry"},
+    {"a": "Houston Cougars", "b": "UCF Knights", "name": "Space City Showdown"}
+  ],
+  "Big_Ten": [
+    {"a": "Ohio State Buckeyes", "b": "Michigan Wolverines", "name": "The Game"},
+    {"a": "Michigan Wolverines", "b": "Michigan State Spartans", "name": "Paul Bunyan Trophy"},
+    {"a": "Minnesota Golden Gophers", "b": "Wisconsin Badgers", "name": "Paul Bunyan's Axe"},
+    {"a": "Iowa Hawkeyes", "b": "Nebraska Cornhuskers", "name": "Heroes Trophy"},
+    {"a": "Indiana Hoosiers", "b": "Purdue Boilermakers", "name": "Old Oaken Bucket"},
+    {"a": "Illinois Fighting Illini", "b": "Northwestern Wildcats", "name": "Land of Lincoln Trophy"},
+    {"a": "Penn State Nittany Lions", "b": "Maryland Terrapins", "name": "Land Grant Trophy"},
+    {"a": "USC Trojans", "b": "UCLA Bruins", "name": "Victory Bell"},
+    {"a": "Oregon Ducks", "b": "Washington Huskies", "name": "Northwest Rivalry"},
+    {"a": "Rutgers Scarlet Knights", "b": "Maryland Terrapins", "name": "Turnpike Rivalry"}
+  ],
+  "C_USA": [
+    {"a": "Liberty Flames", "b": "Jacksonville State Gamecocks", "name": "Freedom Clash"},
+    {"a": "Middle Tennessee Blue Raiders", "b": "Western Kentucky Hilltoppers", "name": "Hundred Miles of Hate"},
+    {"a": "Sam Houston Bearkats", "b": "New Mexico State Aggies", "name": "Frontier Rivalry"},
+    {"a": "Florida International Panthers", "b": "Missouri State Bears", "name": "Conference Clash"},
+    {"a": "Delaware Blue Hens", "b": "Kennesaw State Owls", "name": "Newcomers Cup"}
+  ],
+  "MAC": [
+    {"a": "Miami University RedHawks", "b": "Ohio Bobcats", "name": "Battle of the Bricks"},
+    {"a": "Akron Zips", "b": "Kent State Golden Flashes", "name": "Wagon Wheel"},
+    {"a": "Central Michigan Chippewas", "b": "Western Michigan Broncos", "name": "Victory Cannon"},
+    {"a": "Toledo Rockets", "b": "Bowling Green Falcons", "name": "Battle of I-75"},
+    {"a": "Ball State Cardinals", "b": "Eastern Michigan Eagles", "name": "MAC West Clash"},
+    {"a": "Buffalo Bulls", "b": "UMass Minutemen", "name": "Northeast Rivalry"}
+  ],
+  "MWC": [
+    {"a": "Air Force Falcons", "b": "Wyoming Cowboys", "name": "Rocky Mountain Rivalry"},
+    {"a": "Nevada Wolf Pack", "b": "UNLV Rebels", "name": "Battle for Nevada"},
+    {"a": "New Mexico Lobos", "b": "UTEP Miners", "name": "Battle of I-10"},
+    {"a": "San Jose State Spartans", "b": "Hawai'i Rainbow Warriors", "name": "Dick Tomey Legacy Game"},
+    {"a": "North Dakota State Bison", "b": "Northern Illinois Huskies", "name": "Bison Clash"}
+  ],
+  "Pac_12": [
+    {"a": "Oregon State Beavers", "b": "Washington State Cougars", "name": "Reunion Rivalry"},
+    {"a": "Boise State Broncos", "b": "Fresno State Bulldogs", "name": "Milk Can"},
+    {"a": "San Diego State Aztecs", "b": "Fresno State Bulldogs", "name": "Old Oil Can"},
+    {"a": "Colorado State Rams", "b": "Utah State Aggies", "name": "Border War"},
+    {"a": "Texas State Bobcats", "b": "Boise State Broncos", "name": "Blue Turf Clash"}
+  ],
+  "SEC": [
+    {"a": "Alabama Crimson Tide", "b": "Auburn Tigers", "name": "Iron Bowl"},
+    {"a": "Georgia Bulldogs", "b": "Florida Gators", "name": "World's Largest Outdoor Cocktail Party"},
+    {"a": "Texas Longhorns", "b": "Oklahoma Sooners", "name": "Red River Rivalry"},
+    {"a": "Texas A&M Aggies", "b": "LSU Tigers", "name": "Battle for the Bones"},
+    {"a": "Tennessee Volunteers", "b": "Alabama Crimson Tide", "name": "Third Saturday in October"},
+    {"a": "Ole Miss Rebels", "b": "Mississippi State Bulldogs", "name": "Egg Bowl"},
+    {"a": "South Carolina Gamecocks", "b": "Georgia Bulldogs", "name": "Deep South Clash"},
+    {"a": "Arkansas Razorbacks", "b": "Missouri Tigers", "name": "Battle Line Rivalry"},
+    {"a": "Kentucky Wildcats", "b": "Tennessee Volunteers", "name": "Battle for the Beer Barrel"},
+    {"a": "Vanderbilt Commodores", "b": "Tennessee Volunteers", "name": "In-State Clash"}
+  ],
+  "Sun_Belt": [
+    {"a": "Appalachian State Mountaineers", "b": "Georgia Southern Eagles", "name": "Battle for the Old Southwest Jug"},
+    {"a": "South Alabama Jaguars", "b": "Troy Trojans", "name": "Battle for the Belt"},
+    {"a": "Louisiana Ragin' Cajuns", "b": "UL Monroe Warhawks", "name": "Battle on the Bayou"},
+    {"a": "Marshall Thundering Herd", "b": "Old Dominion Monarchs", "name": "Coastal Clash"},
+    {"a": "Georgia State Panthers", "b": "Georgia Southern Eagles", "name": "Modern Day Hate"},
+    {"a": "James Madison Dukes", "b": "Marshall Thundering Herd", "name": "Battle in the Blue Ridge"},
+    {"a": "Arkansas State Red Wolves", "b": "Louisiana Tech Bulldogs", "name": "Delta Rivalry"}
+  ]
+}

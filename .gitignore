@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Environment and local credentials
+.env
+.env.*
+!.env.example
+
+# Node and frontend build artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/storybook-static/
+
+# Desktop build artifacts
+electron/node_modules/
+electron/build/icon.png
+electron/build/icon.ico
+dist-backend/
+dist-app/
+build/pyinstaller/
+
+# Runtime data
+data/app_settings.json
+data/teams_cache.json
+data/dynasties.json
+data/dynasties/
+data/uploads/
+data/mods/
+data/save_backups/
+data/game_assets/
+
+# Local backups
+data-backup-*
+
+# OS and IDE
+.DS_Store
+.idea/
+*.iml
+*.log
+
+# Local coding-assistant settings
+.claude/

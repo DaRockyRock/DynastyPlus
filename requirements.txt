@@ -1,0 +1,11 @@
+flask>=3.0.0
+watchdog>=4.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# game-asset pipeline (scripts/extract_game_assets.py + backend/assets/frostbite;
+# reads the local CFB 27 install and encodes replacement textures)
+numpy>=2.0.0
+pillow>=10.0.0
+texture2ddecoder>=1.0.6
+zstandard>=0.22.0

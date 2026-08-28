@@ -1,0 +1,417 @@
+/* Rankings, playoff editors, live bracket, and dynasty library. */
+
+/* game-style ranking rows (RankingList variant="game"): flush panel rows */
+.cfp-rank-row {
+  position: relative;
+  display: flex; align-items: center; gap: 12px;
+  min-height: 46px; padding: 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  font-family: var(--font-display);
+  transition: background .12s ease;
+}
+.cfp-rank-row:last-child { border-bottom: none; }
+.cfp-rank-row:hover { background: rgba(255, 255, 255, .04); }
+.cfp-rank-num {
+  width: 30px; flex-shrink: 0; text-align: center;
+  font-family: var(--font-hero); font-weight: 900; font-style: italic;
+  font-size: 19px; color: var(--chalk-2);
+}
+.cfp-rank-team {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-weight: 600; font-size: 15px; letter-spacing: .2px; color: var(--chalk);
+}
+.cfp-rank-first { color: var(--accent-gold); font-size: 11.5px; font-weight: 700; }
+.cfp-rank-rec { font-size: 13px; font-weight: 600; color: var(--chalk-3); font-variant-numeric: tabular-nums; }
+.cfp-rank-points { min-width: 52px; text-align: right; font-size: 12.5px; font-weight: 600; color: var(--chalk-2); font-variant-numeric: tabular-nums; }
+.cfp-rank-row.is-user { background: linear-gradient(90deg, color-mix(in srgb, var(--team) 14%, transparent), transparent 60%); }
+.cfp-rank-row.is-user::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--team); }
+.cfp-rank-row.is-user .cfp-rank-num { color: var(--team); }
+
+.cfp-bracket-label {
+  margin-bottom: 8px;
+  font-family: var(--font-display); font-weight: 700; font-size: 11px;
+  letter-spacing: .6px; text-transform: uppercase; color: var(--chalk-3);
+}
+/* =========================================================================
+   Playoff bracket (.pb-)
+   ========================================================================= */
+.pb-scroll { overflow-x: auto; padding: 4px 2px 14px; }
+.pb-canvas { position: relative; margin: 0 auto; }
+.pb-connectors { position: absolute; inset: 0; pointer-events: none; }
+.pb-connectors path { stroke: color-mix(in srgb, var(--accent-gold) 30%, transparent); stroke-width: 1.5; fill: none; }
+.pb-colhead {
+  position: absolute; top: 0; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: 15px; letter-spacing: .8px; text-transform: uppercase; color: var(--chalk-2);
+}
+
+/* one matchup: two stacked broadcast-style team tiles + the site under the pair */
+.pb-tiles { display: flex; flex-direction: column; gap: 5px; }
+.pb-tile {
+  display: flex; align-items: stretch; height: 46px; border-radius: 2px; overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent-gold) 55%, transparent);
+  background: #0c0e0f;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .45);
+}
+.pb-tile-seed {
+  width: 40px; flex-shrink: 0; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #0b0d0e, #141718);
+  border-right: 1px solid color-mix(in srgb, var(--accent-gold) 40%, transparent);
+  font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: 23px; line-height: 1; color: var(--accent-gold);
+}
+.pb-tile-mark {
+  position: relative; flex: 1; min-width: 0; height: 100%;
+  display: flex; align-items: center; gap: 9px; padding: 0 10px 0 8px;
+  background: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--tile, #232a2e) 74%, #0b0d0e) 0%,
+    color-mix(in srgb, var(--tile, #232a2e) 32%, #0b0d0e) 100%);
+}
+.pb-tile-mark img { display: block; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .55)); transform: translateY(3px); }
+.pb-tile-name {
+  flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: 18px; line-height: 1; letter-spacing: .3px; text-transform: uppercase;
+  color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+  transform: translateY(-2px);
+}
+.pb-tile-rec {
+  flex-shrink: 0; align-self: center;
+  font-family: var(--font-display); font-weight: 600; font-size: 10px;
+  color: rgba(255, 255, 255, .5); font-variant-numeric: tabular-nums;
+}
+.pb-tile-score {
+  flex-shrink: 0; margin-left: auto;
+  font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: 19px; line-height: 1; color: #fff; text-shadow: 0 1px 4px rgba(0, 0, 0, .75);
+}
+/* an undecided slot: plain empty box, no fill, waiting on an earlier game */
+.pb-tile.tbd .pb-tile-mark { background: #101314; justify-content: center; }
+.pb-champ-slot { background: #101314; }
+.pb-tile-tbd {
+  padding: 0 8px; text-align: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 9.5px;
+  letter-spacing: .7px; text-transform: uppercase; color: var(--chalk-3);
+}
+.pb-tile.is-user { border-color: var(--team); box-shadow: 0 0 0 1px var(--team), 0 3px 10px rgba(0, 0, 0, .45); }
+.pb-tile.lost { filter: saturate(.35) brightness(.55); }
+.pb-tile.won { border-color: var(--accent-gold); }
+.pb-game.is-final .pb-tile { border-color: color-mix(in srgb, var(--accent-gold) 85%, #fff); }
+
+.pb-game-label {
+  margin-top: 6px; min-height: 15px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: var(--font-display); font-weight: 700; font-size: 10.5px;
+  letter-spacing: 1.1px; text-transform: uppercase; color: var(--chalk-2);
+  text-align: center;
+}
+.pb-game-label.stacked { flex-direction: column; gap: 1px; }
+.pb-game-label-sub { font-size: 9.5px; letter-spacing: .8px; color: var(--chalk-3); }
+.pb-game-label-logo { width: 15px; height: 15px; object-fit: contain; }
+
+.pb-champ-block { position: absolute; text-align: center; }
+.pb-champ-solo { max-width: 340px; margin: 0 auto; text-align: center; padding: 10px 0; }
+.pb-trophy { margin-top: 8px; height: 118px; object-fit: contain; filter: drop-shadow(0 8px 22px rgba(0, 0, 0, .55)); }
+.pb-champ-slot {
+  margin: 10px auto 0; width: 152px; height: 62px; border-radius: 2px;
+  display: grid; place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent-gold) 60%, transparent);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .45);
+}
+.pb-champ-slot.filled {
+  background: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--tile, #232a2e) 74%, #0b0d0e) 0%,
+    color-mix(in srgb, var(--tile, #232a2e) 32%, #0b0d0e) 100%);
+  border-color: var(--accent-gold);
+}
+.pb-champ-title {
+  margin-top: 8px;
+  font-family: var(--font-hero); font-style: italic; font-weight: 900; font-size: 15px;
+  letter-spacing: .8px; text-transform: uppercase; color: var(--accent-gold);
+}
+.pb-note { margin: 10px 0 0; font-family: var(--font-body); font-size: 12.5px; line-height: 1.5; color: var(--chalk-2); }
+
+/* =========================================================================
+   Playoff format editor (.pfe-)
+   ========================================================================= */
+.pfe-overlay {
+  position: fixed; inset: 0; z-index: 60; overflow-y: auto;
+  background: #000000;
+  padding: 26px clamp(18px, 4vw, 46px) 60px;
+}
+.pfe-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.pfe-head h1 {
+  margin: 0; flex: 1;
+  font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: clamp(26px, 3.4vw, 40px); letter-spacing: .5px; text-transform: uppercase; color: #fff;
+}
+.pfe-layout { display: grid; grid-template-columns: minmax(330px, 380px) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 1080px) { .pfe-layout { grid-template-columns: 1fr; } }
+.pfe-controls { display: flex; flex-direction: column; gap: 14px; }
+.pfe-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 34px; }
+.pfe-row + .pfe-row { margin-top: 12px; }
+.pfe-row-label { font-family: var(--font-display); font-weight: 600; font-size: 13px; color: var(--chalk); }
+.pfe-row-sub { display: block; font-family: var(--font-body); font-weight: 400; font-size: 11.5px; color: var(--chalk-3); margin-top: 1px; }
+.pfe-stack { display: flex; flex-direction: column; gap: 16px; }
+.pfe-tier-row { display: flex; align-items: center; gap: 10px; }
+.pfe-tier-label { flex: 1; font-family: var(--font-display); font-size: 12.5px; font-weight: 600; color: var(--chalk-2); }
+.pfe-inline-btn {
+  border: none; background: none; cursor: pointer; padding: 2px 6px;
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: .6px; text-transform: uppercase; color: var(--chalk-3);
+}
+.pfe-inline-btn:hover { color: var(--cream); }
+.pfe-game-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.pfe-game-num {
+  width: 44px; flex-shrink: 0;
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: .5px; text-transform: uppercase; color: var(--chalk-3);
+}
+.pfe-game-row .set-select, .pfe-game-row .set-input { flex: 1; min-width: 0; }
+.pfe-preview { min-width: 0; }
+.pfe-preview-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.pfe-badge {
+  padding: 3px 9px; border-radius: 3px;
+  background: color-mix(in srgb, var(--cfp) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cfp) 45%, transparent);
+  font-family: var(--font-display); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .8px; text-transform: uppercase; color: var(--chalk);
+}
+.pfe-selection-list { margin: 0; padding: 0; list-style: none; }
+.pfe-selection-list li {
+  display: flex; align-items: center; gap: 8px; padding: 5px 2px;
+  font-family: var(--font-display); font-size: 12px; color: var(--chalk-2);
+  border-bottom: 1px solid rgba(255, 255, 255, .05);
+}
+.pfe-selection-list li:last-child { border-bottom: none; }
+.pfe-reason { margin-left: auto; font-size: 11px; color: var(--loss, #e05252); }
+
+/* =========================================================================
+   Custom playoff off state (.pfo-)
+   The postseason pages collapse to this hero while the custom playoff
+   automation is off: the switch front and center, nothing else on the page.
+   ========================================================================= */
+.pfo-off { display: grid; place-items: center; min-height: min(62vh, 640px); padding: 30px 16px; animation: hud-rise .32s ease both; }
+.pfo-card {
+  position: relative; overflow: hidden;
+  width: min(600px, 100%);
+  padding: 46px 44px 38px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.pfo-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--team) 30%, var(--team) 70%, transparent);
+}
+.pfo-eyebrow {
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: 2.2px; text-transform: uppercase; color: var(--chalk-3);
+}
+.pfo-title {
+  margin: 10px 0 0;
+  font-family: var(--font-hero); font-style: italic; font-weight: 900;
+  font-size: clamp(30px, 4vw, 42px); letter-spacing: .5px;
+  text-transform: uppercase; color: #fff; line-height: 1.05;
+}
+.pfo-lede {
+  margin: 14px auto 0; max-width: 46ch;
+  font-family: var(--font-body); font-size: 14px; line-height: 1.6; color: var(--chalk-2);
+}
+.pfo-switch {
+  display: inline-flex; margin-top: 28px;
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: border-color .14s ease, background .14s ease;
+}
+.pfo-switch:hover { border-color: var(--cream); background: rgba(255, 255, 255, .07); }
+.pfo-switch.busy { opacity: .55; pointer-events: none; }
+.pfo-switch .toggle { gap: 14px; }
+.pfo-switch .toggle-track { width: 52px; height: 28px; border-radius: 14px; }
+.pfo-switch .toggle-thumb { width: 20px; height: 20px; top: 3px; left: 3px; }
+.pfo-switch .toggle.on .toggle-thumb { left: 28px; }
+.pfo-switch .toggle-label { font-size: 15px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; }
+.pfo-still {
+  margin: 30px auto 0; padding-top: 20px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 26px;
+}
+.pfo-still-item {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-display); font-size: 12px; font-weight: 600; color: var(--chalk-2);
+}
+.pfo-check { color: var(--recruiting); font-weight: 700; }
+
+/* =========================================================================
+   Dynasty library / landing (.lib-)
+   ========================================================================= */
+.lib-card {
+  position: relative;
+  display: flex; align-items: center; gap: 16px;
+  min-height: 88px; padding: 16px 18px;
+  border-radius: var(--radius); overflow: hidden;
+  background-color: var(--panel);
+  background-size: cover; background-position: center 30%;
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .35);
+  transition: border-color .13s ease;
+}
+.lib-card:hover { border-color: rgba(255, 255, 255, .22); }
+.lib-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--lib-accent, var(--team)); }
+.lib-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lib-school {
+  font-family: var(--font-hero); font-weight: 900; font-style: italic; text-transform: uppercase;
+  font-size: 23px; line-height: 1; letter-spacing: .5px; color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .55);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lib-meta { font-family: var(--font-display); font-weight: 500; font-size: 13px; color: var(--chalk-2); text-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
+.lib-coach { font-family: var(--font-display); font-size: 12px; font-weight: 500; color: var(--chalk-3); text-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
+
+/* --- Playoff Bracket live view (PlayoffLivePage / PlayoffLiveStatus) ------ */
+.playoff-live .plv-status { display: grid; gap: 10px; margin-bottom: 18px; }
+
+/* Status banner: charcoal panel with a state dot + label, matching the game
+   HUD's live-status chip. Accent (dot + left rail) keys off the state tone. */
+.plv-banner {
+  --plv-accent: var(--cfp);
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px 16px 14px; border-radius: 10px;
+  background: var(--panel); border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--plv-accent);
+}
+.plv-info { --plv-accent: var(--cfp); }
+.plv-live { --plv-accent: var(--recruiting); }
+.plv-gold { --plv-accent: var(--team-alt); }
+.plv-warn { --plv-accent: var(--accent-orange); }
+.plv-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 6px;
+  background: var(--plv-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--plv-accent) 22%, transparent);
+}
+.plv-live .plv-dot { animation: pulse 1.8s ease-in-out infinite; }
+.plv-banner-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.plv-state {
+  font-family: var(--font-display); font-weight: 800; font-size: 10.5px;
+  letter-spacing: .8px; text-transform: uppercase; color: var(--plv-accent);
+}
+.plv-title {
+  font-family: var(--font-display); font-weight: 800; font-style: italic;
+  text-transform: uppercase; letter-spacing: .3px; font-size: 16px; color: var(--chalk);
+}
+.plv-desc { font-size: 13px; color: var(--chalk-2); line-height: 1.5; }
+
+/* Secondary lines (write-back / reload guidance, validation problems): quiet
+   sub-notes under the banner, not competing callout boxes. */
+.plv-line {
+  margin: 0; padding-left: 15px; position: relative;
+  font-size: 12.5px; line-height: 1.5; color: var(--chalk-3);
+}
+.plv-line::before {
+  content: ''; position: absolute; left: 2px; top: 8px;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--chalk-3);
+}
+.plv-line-accent { color: var(--chalk-2); }
+.plv-line-accent::before { background: var(--recruiting); }
+.plv-line-warn { color: color-mix(in srgb, var(--accent-orange) 70%, var(--chalk)); }
+.plv-line-warn::before { background: var(--accent-orange); }
+
+.plv-history { display: grid; gap: 6px; }
+.plv-history-row {
+  display: flex; align-items: baseline; gap: 14px;
+  padding: 8px 12px; border-radius: 8px;
+  background: var(--panel-2); border: 1px solid var(--line-soft);
+}
+/* archived seasons expand to their full recorded bracket */
+.plv-history-toggle {
+  width: 100%; text-align: left; cursor: pointer; font: inherit; color: inherit;
+}
+.plv-history-toggle:hover, .plv-history-toggle.open {
+  border-color: color-mix(in srgb, var(--cfp) 45%, var(--line-soft));
+}
+.plv-history-bracket { margin: 8px 0 14px; }
+.plv-history-year {
+  font-family: var(--font-display); font-weight: 800; font-size: 15px;
+  letter-spacing: .04em; color: var(--chalk);
+}
+.plv-history-champ { font-weight: 600; flex: 1; color: var(--chalk); }
+.plv-history-format {
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: .5px; text-transform: uppercase; color: var(--chalk-3);
+}
+.plv-actions { margin-top: 10px; }
+
+/* The playoff walkthrough guide (PlayoffGuide): one box per phase; the
+   current phase expands with its step list, others collapse to a chip. */
+.pgd { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.pgd-phase {
+  flex: 1 1 150px; min-width: 150px;
+  padding: 11px 14px 12px; border-radius: 10px;
+  background: var(--panel); border: 1px solid var(--line-soft);
+}
+.pgd-phase-done { opacity: .62; }
+.pgd-phase-upcoming { opacity: .8; }
+.pgd-phase-current {
+  flex-basis: 100%;
+  border-color: color-mix(in srgb, var(--cfp) 55%, var(--line-soft));
+  border-left: 3px solid var(--cfp);
+  opacity: 1;
+}
+.pgd-head { display: flex; align-items: baseline; gap: 10px; }
+.pgd-title {
+  font-family: var(--font-display); font-weight: 800; font-style: italic;
+  text-transform: uppercase; letter-spacing: .3px; font-size: 14.5px;
+  color: var(--chalk); flex: 1;
+}
+.pgd-chip {
+  font-family: var(--font-display); font-weight: 800; font-size: 10px;
+  letter-spacing: .8px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--panel-2); color: var(--chalk-3);
+  border: 1px solid var(--line-soft); white-space: nowrap;
+}
+.pgd-chip-current { background: var(--cfp); color: #14181b; border-color: transparent; }
+.pgd-chip-done { color: color-mix(in srgb, var(--cfp) 70%, var(--chalk-3)); }
+.pgd-meta {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px;
+  font-size: 12px; color: var(--chalk-3);
+}
+.pgd-user { color: var(--chalk-2); font-weight: 600; }
+.pgd-steps {
+  list-style: none; margin: 10px 0 0; padding: 0;
+  display: grid; gap: 7px;
+}
+.pgd-step { display: flex; gap: 10px; align-items: flex-start; }
+.pgd-step-mark {
+  width: 17px; height: 17px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800;
+  border: 1.5px solid var(--line-soft); color: var(--chalk-3);
+  background: var(--panel-2);
+}
+.pgd-step-done .pgd-step-mark {
+  border-color: color-mix(in srgb, var(--cfp) 60%, transparent);
+  color: var(--cfp);
+}
+.pgd-step-current .pgd-step-mark {
+  border-color: var(--cfp); background: var(--cfp); color: #14181b;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cfp) 22%, transparent);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.pgd-step-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pgd-step-label { font-size: 13px; font-weight: 600; color: var(--chalk-2); }
+.pgd-step-done .pgd-step-label { color: var(--chalk-3); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--chalk-3) 55%, transparent); }
+.pgd-step-current .pgd-step-label {
+  color: var(--chalk);
+  font-family: var(--font-display); font-weight: 800; text-transform: uppercase;
+  letter-spacing: .3px; font-size: 13.5px;
+}
+.pgd-step-detail { font-size: 12.5px; line-height: 1.5; color: var(--chalk-3); max-width: 640px; }

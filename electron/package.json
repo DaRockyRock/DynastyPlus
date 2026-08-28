@@ -1,0 +1,56 @@
+{
+  "name": "dynastyplus-tools-desktop",
+  "productName": "Dynasty+ Tools",
+  "version": "0.1.9",
+  "description": "Dynasty+ save editor tools for EA Sports College Football 27",
+  "author": "DynastyPlus",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --config.directories.output=../dist-app/tools"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.dynastyplus.tools",
+    "productName": "Dynasty+ Tools",
+    "compression": "maximum",
+    "electronLanguages": ["en-US"],
+    "directories": {
+      "output": "../dist-app/tools",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "build/icon.ico"
+    ],
+    "extraResources": [
+      {
+        "from": "../dist-backend/dynastyplus-backend",
+        "to": "backend"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
